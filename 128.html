@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flashcard – Longest Consecutive Sequence</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0f14;
+    --card-front: #13161e;
+    --card-back: #0e1620;
+    --accent: #3dd6f5;
+    --accent2: #f5a623;
+    --green: #4ade80;
+    --red: #f87171;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --border: #1e2535;
+  }
+
+  body {
+    background: var(--bg);
+    font-family: 'Syne', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    gap: 24px;
+  }
+
+  h1 {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .scene {
+    width: 100%;
+    max-width: 680px;
+    height: 460px;
+    perspective: 1200px;
+    cursor: pointer;
+  }
+
+  .card {
+    width: 100%; height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .card.flipped { transform: rotateY(180deg); }
+
+  .face {
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    padding: 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow: hidden;
+  }
+
+  .face::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    pointer-events: none;
+  }
+
+  .front {
+    background: var(--card-front);
+  }
+  .front::before {
+    background: radial-gradient(ellipse at 80% 20%, rgba(61,214,245,0.07) 0%, transparent 60%);
+  }
+
+  .back {
+    background: var(--card-back);
+    transform: rotateY(180deg);
+  }
+  .back::before {
+    background: radial-gradient(ellipse at 20% 80%, rgba(74,222,128,0.07) 0%, transparent 60%);
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 99px;
+    width: fit-content;
+  }
+
+  .tag-medium { background: rgba(245,166,35,0.15); color: var(--accent2); border: 1px solid rgba(245,166,35,0.3); }
+  .tag-on { background: rgba(61,214,245,0.1); color: var(--accent); border: 1px solid rgba(61,214,245,0.25); }
+  .tag-answer { background: rgba(74,222,128,0.1); color: var(--green); border: 1px solid rgba(74,222,128,0.25); }
+
+  .question-title {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.3;
+    color: var(--text);
+  }
+
+  .question-body {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    color: #9ca3af;
+    line-height: 1.7;
+  }
+
+  .hint-box {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+  }
+  .hint-box p {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+  }
+  .hint-box ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .hint-box li {
+    font-size: 13px;
+    color: #9ca3af;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    line-height: 1.5;
+  }
+  .hint-box li::before { content: '→'; color: var(--accent); flex-shrink: 0; font-weight: 700; }
+
+  .flip-hint {
+    margin-top: auto;
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+
+  /* Back side */
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .steps {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .steps li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #c9d1de;
+  }
+  .step-num {
+    background: rgba(61,214,245,0.12);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 800;
+    min-width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .step-key { color: var(--accent2); font-weight: 700; }
+
+  .code-block {
+    background: rgba(0,0,0,0.35);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    overflow-x: auto;
+    white-space: pre;
+    color: #c9d1de;
+  }
+  .kw { color: #c792ea; }
+  .fn { color: var(--accent); }
+  .cm { color: #546e7a; font-style: italic; }
+  .num { color: var(--accent2); }
+  .str { color: var(--green); }
+
+  /* Bottom controls */
+  .controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  button {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 22px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-flip {
+    background: rgba(61,214,245,0.1);
+    color: var(--accent);
+    border: 1px solid rgba(61,214,245,0.3);
+  }
+  .btn-flip:hover { background: rgba(61,214,245,0.2); transform: translateY(-1px); }
+
+  .btn-again {
+    background: rgba(248,113,113,0.1);
+    color: var(--red);
+    border: 1px solid rgba(248,113,113,0.25);
+  }
+  .btn-again:hover { background: rgba(248,113,113,0.2); }
+
+  .btn-good {
+    background: rgba(74,222,128,0.1);
+    color: var(--green);
+    border: 1px solid rgba(74,222,128,0.25);
+  }
+  .btn-good:hover { background: rgba(74,222,128,0.2); }
+
+  .status {
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .review-btns { display: none; gap: 12px; }
+  .card.flipped ~ * .review-btns { display: flex; }
+</style>
+</head>
+<body>
+
+<h1>📇 LeetCode Flashcard</h1>
+
+<div class="scene" id="scene" onclick="flipCard()">
+  <div class="card" id="card">
+
+    <!-- FRONT -->
+    <div class="face front">
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <span class="tag tag-medium">⚡ Medium</span>
+        <span class="tag tag-on">O(n) required</span>
+      </div>
+
+      <div>
+        <div class="question-title">#128 · Longest Consecutive Sequence</div>
+      </div>
+
+      <div class="question-body">
+        Given an <strong style="color:var(--text)">unsorted array</strong> of integers <code style="color:var(--accent);background:rgba(61,214,245,0.08);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace">nums</code>, return the length of the <strong style="color:var(--text)">longest consecutive elements sequence</strong>.
+      </div>
+
+      <div class="hint-box">
+        <p>Key insight to recall</p>
+        <ul>
+          <li>What data structure gives O(1) lookup?</li>
+          <li>How do you avoid counting sequences multiple times?</li>
+          <li>When should you start counting a new streak?</li>
+        </ul>
+      </div>
+
+      <div class="flip-hint">👆 Click card to reveal solution</div>
+    </div>
+
+    <!-- BACK -->
+    <div class="face back">
+      <div style="display:flex; gap:8px; align-items:center;">
+        <span class="tag tag-answer">✓ Solution</span>
+        <span class="tag tag-on">HashSet</span>
+      </div>
+
+      <div>
+        <div class="section-label">Algorithm steps</div>
+        <ul class="steps">
+          <li><span class="step-num">1</span><span>Put all numbers into a <span class="step-key">HashSet</span> (deduplicates + O(1) lookup)</span></li>
+          <li><span class="step-num">2</span><span>Loop each number — <span class="step-key">skip if num−1 exists</span> (not a sequence start)</span></li>
+          <li><span class="step-num">3</span><span>When it IS a start: walk forward with <span class="step-key">while (set.contains(cur+1))</span></span></li>
+          <li><span class="step-num">4</span><span>Track <code style="font-family:'JetBrains Mono',monospace;font-size:11px">longestStreak = max(longest, current)</code></span></li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="section-label">Java skeleton</div>
+        <div class="code-block"><span class="kw">Set</span>&lt;<span class="kw">Integer</span>&gt; set = <span class="kw">new</span> <span class="fn">HashSet</span>&lt;&gt;();
+<span class="kw">for</span> (<span class="kw">int</span> n : nums) set.<span class="fn">add</span>(n);
+
+<span class="kw">int</span> longest = <span class="num">0</span>;
+<span class="kw">for</span> (<span class="kw">int</span> n : set) {
+  <span class="kw">if</span> (!set.<span class="fn">contains</span>(n - <span class="num">1</span>)) { <span class="cm">// sequence start</span>
+    <span class="kw">int</span> cur = n, streak = <span class="num">1</span>;
+    <span class="kw">while</span> (set.<span class="fn">contains</span>(cur + <span class="num">1</span>)) { cur++; streak++; }
+    longest = <span class="fn">Math.max</span>(longest, streak);
+  }
+}
+<span class="kw">return</span> longest;</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Controls -->
+<div class="controls" id="controls">
+  <button class="btn-flip" onclick="flipCard()">↩ Flip</button>
+  <div class="review-btns" id="reviewBtns">
+    <button class="btn-again" onclick="markResult('again')">✗ Again</button>
+    <button class="btn-good" onclick="markResult('good')">✓ Got it</button>
+  </div>
+</div>
+
+<div class="status" id="status">Click the card to reveal the answer</div>
+
+<script>
+  let flipped = false;
+  let score = { good: 0, again: 0 };
+
+  function flipCard() {
+    flipped = !flipped;
+    document.getElementById('card').classList.toggle('flipped', flipped);
+    document.getElementById('reviewBtns').style.display = flipped ? 'flex' : 'none';
+    document.getElementById('status').textContent = flipped
+      ? 'How well did you remember it?'
+      : 'Click the card to reveal the answer';
+  }
+
+  function markResult(result) {
+    score[result]++;
+    flipped = false;
+    document.getElementById('card').classList.remove('flipped');
+    document.getElementById('reviewBtns').style.display = 'none';
+    const msg = result === 'good'
+      ? `✓ Nice! ${score.good} correct so far.`
+      : `Marked for review. Keep practicing!`;
+    document.getElementById('status').textContent = msg;
+  }
+</script>
+</body>
+</html>
