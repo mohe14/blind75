@@ -4,29 +4,30 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Clone Graph – Flashcard</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
     --bg: #0a0e1a;
-    --card-bg: #0f1528;
-    --border: #1e2d50;
-    --accent: #4f8fff;
-    --accent2: #ff6b6b;
-    --accent3: #56e0a0;
-    --text: #e2e8f8;
-    --muted: #6b7a9e;
-    --code-bg: #07090f;
-    --tag-bg: #1a2540;
+    --card-front: #0f1528;
+    --card-back: #0d1a1f;
+    --accent: #00ffa3;
+    --accent2: #ff6b35;
+    --accent3: #4d9fff;
+    --text: #e8eaf0;
+    --muted: #6b7494;
+    --border: rgba(0,255,163,0.15);
+    --glow: rgba(0,255,163,0.08);
   }
 
   body {
     background: var(--bg);
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Syne', sans-serif;
     color: var(--text);
     min-height: 100vh;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 2rem;
@@ -35,307 +36,288 @@
 
   body::before {
     content: '';
-    position: fixed;
-    inset: 0;
+    position: fixed; inset: 0;
     background:
-      radial-gradient(ellipse 60% 40% at 20% 10%, rgba(79,143,255,0.08) 0%, transparent 60%),
-      radial-gradient(ellipse 40% 30% at 80% 80%, rgba(86,224,160,0.06) 0%, transparent 60%);
+      radial-gradient(ellipse 60% 40% at 20% 20%, rgba(0,255,163,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 50% at 80% 80%, rgba(77,159,255,0.04) 0%, transparent 60%);
     pointer-events: none;
-    z-index: 0;
+  }
+
+  .label {
+    font-size: 0.65rem; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 1.2rem; opacity: 0.7;
+  }
+
+  .scene {
+    width: min(680px, 100%); height: 480px;
+    perspective: 1200px; cursor: pointer;
   }
 
   .card {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    max-width: 860px;
-    background: var(--card-bg);
+    width: 100%; height: 100%;
+    position: relative; transform-style: preserve-3d;
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .card.flipped { transform: rotateY(180deg); }
+
+  .face {
+    position: absolute; inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 20px; padding: 2.2rem 2.4rem;
     border: 1px solid var(--border);
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: 0 0 0 1px rgba(79,143,255,0.08), 0 32px 80px rgba(0,0,0,0.6);
-    animation: fadeUp 0.6s ease both;
+    display: flex; flex-direction: column;
   }
 
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(24px); }
-    to   { opacity: 1; transform: translateY(0); }
+  .face--front {
+    background: var(--card-front);
+    box-shadow: 0 0 60px var(--glow), inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+  .face--back {
+    background: var(--card-back);
+    box-shadow: 0 0 60px rgba(0,255,163,0.06), inset 0 1px 0 rgba(255,255,255,0.04);
+    transform: rotateY(180deg);
   }
 
-  /* ── Header ── */
-  .card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.4rem 2rem;
-    border-bottom: 1px solid var(--border);
-    background: linear-gradient(90deg, rgba(79,143,255,0.06), transparent);
-  }
-
-  .header-left { display: flex; align-items: center; gap: 1rem; }
-
-  .problem-number {
-    font-family: 'Syne', sans-serif;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--accent);
-    background: rgba(79,143,255,0.12);
-    border: 1px solid rgba(79,143,255,0.25);
-    padding: 0.3rem 0.75rem;
-    border-radius: 6px;
-  }
-
-  .problem-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 1.35rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    color: var(--text);
-  }
-
-  .tags { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-
+  .tag-row { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
   .tag {
-    font-size: 0.7rem;
-    font-weight: 500;
-    letter-spacing: 0.05em;
-    padding: 0.28rem 0.65rem;
-    border-radius: 5px;
-    background: var(--tag-bg);
-    border: 1px solid var(--border);
-    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 0.25rem 0.6rem; border-radius: 4px;
+  }
+  .tag--graph  { background: rgba(77,159,255,0.15);  color: var(--accent3); border: 1px solid rgba(77,159,255,0.3); }
+  .tag--dfs    { background: rgba(0,255,163,0.1);    color: var(--accent);  border: 1px solid rgba(0,255,163,0.25); }
+  .tag--medium { background: rgba(255,107,53,0.12);  color: var(--accent2); border: 1px solid rgba(255,107,53,0.3); }
+
+  .front-title {
+    font-size: 1.55rem; font-weight: 800; line-height: 1.2;
+    margin-bottom: 1.2rem; color: #fff;
   }
 
-  .tag.graph   { color: #a78bfa; border-color: rgba(167,139,250,0.3); background: rgba(167,139,250,0.07); }
-  .tag.dfs     { color: var(--accent3); border-color: rgba(86,224,160,0.3); background: rgba(86,224,160,0.07); }
-  .tag.medium  { color: #fbbf24; border-color: rgba(251,191,36,0.3); background: rgba(251,191,36,0.07); }
-
-  /* ── Body ── */
-  .card-body { display: grid; grid-template-columns: 1fr 1fr; }
-
-  @media (max-width: 640px) { .card-body { grid-template-columns: 1fr; } }
-
-  /* ── Steps panel ── */
-  .steps-panel {
-    padding: 1.8rem 2rem;
-    border-right: 1px solid var(--border);
+  .divider {
+    height: 1px;
+    background: linear-gradient(to right, var(--accent), transparent);
+    margin-bottom: 1.2rem; opacity: 0.3;
   }
 
-  .panel-label {
-    font-family: 'Syne', sans-serif;
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 1.2rem;
+  .question-block {
+    flex: 1; display: flex; flex-direction: column;
+    justify-content: center; gap: 0.8rem;
   }
 
-  .steps { display: flex; flex-direction: column; gap: 0.9rem; }
-
-  .step {
-    display: flex;
-    gap: 0.85rem;
-    align-items: flex-start;
-    animation: fadeUp 0.5s ease both;
+  .question-block p {
+    font-size: 0.95rem; line-height: 1.65;
+    color: rgba(232,234,240,0.82);
   }
 
-  .step:nth-child(1) { animation-delay: 0.05s; }
-  .step:nth-child(2) { animation-delay: 0.10s; }
-  .step:nth-child(3) { animation-delay: 0.15s; }
-  .step:nth-child(4) { animation-delay: 0.20s; }
-  .step:nth-child(5) { animation-delay: 0.25s; }
-  .step:nth-child(6) { animation-delay: 0.30s; }
-  .step:nth-child(7) { animation-delay: 0.35s; }
+  .highlight {
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace; font-size: 0.88em;
+    background: rgba(0,255,163,0.07); padding: 0.1em 0.3em; border-radius: 3px;
+  }
+
+  .diagram {
+    margin-top: 0.8rem; padding: 0.9rem 1.1rem;
+    background: rgba(255,255,255,0.025);
+    border-left: 2px solid var(--accent3);
+    border-radius: 0 8px 8px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.74rem; color: var(--muted); line-height: 1.9;
+  }
+  .diagram .orig  { color: var(--accent3); }
+  .diagram .clone { color: var(--accent); }
+  .diagram .arrow { color: var(--accent2); }
+
+  .insight {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.25);
+    border-radius: 6px; padding: 0.45rem 0.8rem;
+    font-size: 0.76rem; color: var(--accent2); margin-top: 0.6rem;
+  }
+  .insight::before { content: '⚡'; font-size: 0.8em; }
+
+  .flip-hint {
+    margin-top: 1.5rem; font-size: 0.68rem;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted); display: flex; align-items: center; gap: 0.5rem;
+  }
+  .flip-hint::before { content: ''; width: 16px; height: 1px; background: var(--muted); }
+
+  /* BACK */
+  .back-title {
+    font-size: 0.65rem; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 1.2rem; opacity: 0.7;
+  }
+
+  .steps { flex: 1; display: flex; flex-direction: column; gap: 0.65rem; overflow-y: auto; }
+
+  .step { display: flex; gap: 0.8rem; align-items: flex-start; }
 
   .step-num {
-    flex-shrink: 0;
-    width: 22px;
-    height: 22px;
-    border-radius: 6px;
-    background: rgba(79,143,255,0.12);
-    border: 1px solid rgba(79,143,255,0.28);
-    color: var(--accent);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 1px;
+    flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
+    background: rgba(0,255,163,0.12); border: 1px solid rgba(0,255,163,0.3);
+    color: var(--accent); font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; margin-top: 1px;
   }
 
-  .step-text {
-    font-size: 0.84rem;
-    line-height: 1.55;
-    color: #b0bdd8;
-  }
-
+  .step-text { font-size: 0.82rem; line-height: 1.6; color: rgba(232,234,240,0.85); }
   .step-text code {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.78em;
+    color: var(--accent); background: rgba(0,255,163,0.07);
+    padding: 0.05em 0.3em; border-radius: 3px;
+  }
+
+  .flow-box {
+    margin-top: 0.4rem; padding: 0.65rem 1rem;
+    background: rgba(77,159,255,0.07); border: 1px solid rgba(77,159,255,0.2);
+    border-radius: 8px; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.74rem; color: var(--accent3); line-height: 1.8;
+  }
+
+  .complexity-row { margin-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  .complexity-box {
+    padding: 0.6rem 0.8rem; border-radius: 10px;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+  }
+  .complexity-box .c-label {
+    font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 0.2rem;
+  }
+  .complexity-box .c-val {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.95rem;
+    font-weight: 700; color: var(--accent2);
+  }
+
+  .nav { margin-top: 1.4rem; display: flex; align-items: center; gap: 1rem; }
+
+  .btn {
+    padding: 0.55rem 1.4rem; border-radius: 8px;
+    border: 1px solid var(--border); background: rgba(0,255,163,0.06);
+    color: var(--accent); font-family: 'Syne', sans-serif;
+    font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; cursor: pointer; transition: background 0.2s, border-color 0.2s;
+  }
+  .btn:hover { background: rgba(0,255,163,0.13); border-color: rgba(0,255,163,0.4); }
+
+  .btn-flip {
+    padding: 0.55rem 1.4rem; border-radius: 8px;
+    background: var(--accent); color: #0a0e1a;
+    font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 800;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    border: none; cursor: pointer; transition: opacity 0.2s;
+  }
+  .btn-flip:hover { opacity: 0.85; }
+
+  .counter {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.78rem;
-    color: var(--accent3);
-    background: rgba(86,224,160,0.08);
-    padding: 0.1rem 0.35rem;
-    border-radius: 4px;
+    font-size: 0.72rem; color: var(--muted); margin-left: auto;
   }
-
-  /* ── Code panel ── */
-  .code-panel { padding: 1.8rem 2rem; }
-
-  pre {
-    background: var(--code-bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.4rem 1.5rem;
-    overflow-x: auto;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.78rem;
-    line-height: 1.75;
-  }
-
-  .kw   { color: #81aaff; }
-  .type { color: #56e0a0; }
-  .fn   { color: #ffd080; }
-  .cm   { color: #3d5070; font-style: italic; }
-  .str  { color: #ff9f7a; }
-  .num  { color: #c4a4ff; }
-  .var  { color: #e2e8f8; }
-  .op   { color: #6b8fc9; }
-
-  /* ── Footer ── */
-  .card-footer {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-    padding: 1.2rem 2rem;
-    border-top: 1px solid var(--border);
-    background: rgba(79,143,255,0.02);
-  }
-
-  .meta-pill {
-    display: flex;
-    align-items: center;
-    gap: 0.45rem;
-    font-size: 0.75rem;
-    color: var(--muted);
-  }
-
-  .meta-pill span.dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: currentColor;
-    opacity: 0.5;
-  }
-
-  .meta-pill .val { color: var(--text); font-weight: 500; }
 </style>
 </head>
 <body>
 
-<div class="card">
+<div class="label">Graph · DFS + HashMap</div>
 
-  <!-- Header -->
-  <div class="card-header">
-    <div class="header-left">
-      <span class="problem-number"># 133</span>
-      <span class="problem-title">Clone Graph</span>
+<div class="scene" onclick="flipCard()">
+  <div class="card" id="card">
+
+    <!-- FRONT -->
+    <div class="face face--front">
+      <div class="tag-row">
+        <span class="tag tag--graph">Graph</span>
+        <span class="tag tag--dfs">DFS</span>
+        <span class="tag tag--medium">Medium</span>
+      </div>
+
+      <div class="front-title">Clone Graph</div>
+      <div class="divider"></div>
+
+      <div class="question-block">
+        <p>Given a reference to a node in a <strong>connected undirected graph</strong>, return a <strong>deep copy</strong> of the graph.</p>
+        <p>Each node has a <span class="highlight">val</span> and a list of <span class="highlight">neighbors</span>. The clone must be a completely independent graph — no shared references.</p>
+
+        <div class="diagram">
+          <span class="orig">Original:  1 — 2</span><br>
+          <span class="orig">           |   |</span><br>
+          <span class="orig">           4 — 3</span><br>
+          <span class="arrow">↓ deep clone ↓</span><br>
+          <span class="clone">Clone:     1'— 2'</span><br>
+          <span class="clone">           |   |</span><br>
+          <span class="clone">           4'— 3'</span>
+        </div>
+
+        <div class="insight">visited map prevents infinite loops on cycles</div>
+      </div>
+
+      <div class="flip-hint">Click to reveal solution</div>
     </div>
-    <div class="tags">
-      <span class="tag medium">Medium</span>
-      <span class="tag graph">Graph</span>
-      <span class="tag dfs">DFS</span>
-    </div>
-  </div>
 
-  <!-- Body -->
-  <div class="card-body">
+    <!-- BACK -->
+    <div class="face face--back">
+      <div class="back-title">Solution · DFS + Visited HashMap</div>
 
-    <!-- Steps -->
-    <div class="steps-panel">
-      <div class="panel-label">Algorithm Steps</div>
       <div class="steps">
-
         <div class="step">
           <div class="step-num">1</div>
-          <div class="step-text">Define a class-level <code>Map&lt;Node,Node&gt;</code> called <code>visited</code> to track original → clone mappings.</div>
+          <div class="step-text"><strong>Base cases:</strong> if <code>node == null</code> return <code>null</code>. If <code>visited.containsKey(node)</code> return the already-cloned node to avoid cycles.</div>
         </div>
-
         <div class="step">
           <div class="step-num">2</div>
-          <div class="step-text">If <code>node == null</code>, return <code>null</code> immediately (base case).</div>
+          <div class="step-text"><strong>Create & register clone:</strong> make <code>new Node(node.val)</code>, then immediately <code>visited.put(node, cloneNode)</code> — before recursing, so cycles resolve correctly.</div>
         </div>
-
         <div class="step">
           <div class="step-num">3</div>
-          <div class="step-text">If <code>visited</code> contains the node, return <code>visited.get(node)</code> to avoid infinite cycles.</div>
+          <div class="step-text"><strong>Recurse on neighbors:</strong> for each neighbor, call <code>cloneGraph(neighbor)</code> and add the result to <code>cloneNode.neighbors</code>.</div>
+        </div>
+
+        <div class="flow-box">
+          visit node → clone it → store in map<br>
+          → recurse each neighbor → return clone
         </div>
 
         <div class="step">
-          <div class="step-num">4</div>
-          <div class="step-text">Create <code>cloneNode = new Node(node.val)</code> as the deep copy.</div>
+          <div class="step-num">★</div>
+          <div class="step-text"><strong>Key insight:</strong> the <code>HashMap&lt;Node, Node&gt;</code> maps original → clone, acting as both a visited set and a lookup for already-cloned nodes.</div>
         </div>
+      </div>
 
-        <div class="step">
-          <div class="step-num">5</div>
-          <div class="step-text">Add <code>cloneNode</code> to <code>visited</code> map <em>before</em> recursing (prevents re-visiting).</div>
+      <div class="complexity-row">
+        <div class="complexity-box">
+          <div class="c-label">Time</div>
+          <div class="c-val">O(V + E)</div>
         </div>
-
-        <div class="step">
-          <div class="step-num">6</div>
-          <div class="step-text">Loop over each <code>neighbor</code> in <code>node.neighbors</code>; recursively call <code>cloneGraph(neighbor)</code> and add the result to <code>cloneNode.neighbors</code>.</div>
+        <div class="complexity-box">
+          <div class="c-label">Space</div>
+          <div class="c-val">O(V)</div>
         </div>
-
-        <div class="step">
-          <div class="step-num">7</div>
-          <div class="step-text">Return <code>cloneNode</code>.</div>
-        </div>
-
       </div>
     </div>
 
-    <!-- Code -->
-    <div class="code-panel">
-      <div class="panel-label">Java Solution</div>
-<pre><span class="cm">// class-level visited map</span>
-<span class="kw">class</span> <span class="type">Solution</span> {
-  <span class="kw">private</span> <span class="type">Map</span><span class="op">&lt;</span><span class="type">Node</span>, <span class="type">Node</span><span class="op">&gt;</span> <span class="var">visited</span>
-      = <span class="kw">new</span> <span class="type">HashMap</span><span class="op">&lt;&gt;</span>();
-
-  <span class="kw">public</span> <span class="type">Node</span> <span class="fn">cloneGraph</span>(<span class="type">Node</span> <span class="var">node</span>) {
-
-    <span class="cm">// ① null check</span>
-    <span class="kw">if</span> (<span class="var">node</span> == <span class="kw">null</span>) <span class="kw">return</span> <span class="var">node</span>;
-
-    <span class="cm">// ② already cloned?</span>
-    <span class="kw">if</span> (<span class="var">visited</span>.<span class="fn">containsKey</span>(<span class="var">node</span>))
-      <span class="kw">return</span> <span class="var">visited</span>.<span class="fn">get</span>(<span class="var">node</span>);
-
-    <span class="cm">// ③ create clone & register</span>
-    <span class="type">Node</span> <span class="var">cloneNode</span> = <span class="kw">new</span> <span class="type">Node</span>(<span class="var">node</span>.val);
-    <span class="var">visited</span>.<span class="fn">put</span>(<span class="var">node</span>, <span class="var">cloneNode</span>);
-
-    <span class="cm">// ④ recurse over neighbors</span>
-    <span class="kw">for</span> (<span class="type">Node</span> <span class="var">n</span> : <span class="var">node</span>.neighbors)
-      <span class="var">cloneNode</span>.neighbors
-        .<span class="fn">add</span>(<span class="fn">cloneGraph</span>(<span class="var">n</span>));
-
-    <span class="kw">return</span> <span class="var">cloneNode</span>;
-  }
-}</pre>
-    </div>
-
-  </div><!-- /card-body -->
-
-  <!-- Footer -->
-  <div class="card-footer">
-    <div class="meta-pill"><span class="dot"></span>Time&nbsp;<span class="val">O(V + E)</span></div>
-    <div class="meta-pill"><span class="dot"></span>Space&nbsp;<span class="val">O(V)</span></div>
-    <div class="meta-pill"><span class="dot"></span>Pattern&nbsp;<span class="val">DFS + Memoisation</span></div>
-    <div class="meta-pill"><span class="dot"></span>Key idea&nbsp;<span class="val">Register clone before recursing</span></div>
   </div>
+</div>
 
-</div><!-- /card -->
+<div class="nav">
+  <button class="btn" onclick="reset()">↺ Reset</button>
+  <button class="btn-flip" onclick="flipCard()">Flip Card</button>
+  <span class="counter" id="counter">Front</span>
+</div>
+
+<script>
+  let flipped = false;
+  function flipCard() {
+    flipped = !flipped;
+    document.getElementById('card').classList.toggle('flipped', flipped);
+    document.getElementById('counter').textContent = flipped ? 'Answer' : 'Front';
+  }
+  function reset() {
+    flipped = false;
+    document.getElementById('card').classList.remove('flipped');
+    document.getElementById('counter').textContent = 'Front';
+  }
+</script>
 </body>
 </html>
