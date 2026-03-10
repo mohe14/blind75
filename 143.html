@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reorder List – Flashcard</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0a0a;
+    --card-front: #1a0f0f;
+    --card-back: #0f1518;
+    --accent: #f87171;
+    --accent2: #fbbf24;
+    --accent3: #34d399;
+    --accent4: #60a5fa;
+    --text: #e8eaf0;
+    --muted: #8a6a6a;
+    --border: rgba(248,113,113,0.17);
+    --glow: rgba(248,113,113,0.07);
+  }
+
+  body {
+    background: var(--bg);
+    font-family: 'Syne', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 2rem; overflow-x: hidden;
+  }
+
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 55% 40% at 10% 20%, rgba(248,113,113,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse 45% 50% at 90% 80%, rgba(96,165,250,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .label {
+    font-size: 0.65rem; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 1.2rem; opacity: 0.75;
+  }
+
+  .scene { width: min(680px, 100%); height: 480px; perspective: 1200px; cursor: pointer; }
+
+  .card {
+    width: 100%; height: 100%; position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .card.flipped { transform: rotateY(180deg); }
+
+  .face {
+    position: absolute; inset: 0;
+    backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    border-radius: 20px; padding: 2.2rem 2.4rem;
+    border: 1px solid var(--border); display: flex; flex-direction: column;
+  }
+  .face--front {
+    background: var(--card-front);
+    box-shadow: 0 0 60px var(--glow), inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+  .face--back {
+    background: var(--card-back);
+    box-shadow: 0 0 60px rgba(248,113,113,0.05), inset 0 1px 0 rgba(255,255,255,0.04);
+    transform: rotateY(180deg);
+  }
+
+  .tag-row { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; padding: 0.25rem 0.6rem; border-radius: 4px;
+  }
+  .tag--ll     { background: rgba(96,165,250,0.12);  color: var(--accent4); border: 1px solid rgba(96,165,250,0.28); }
+  .tag--two    { background: rgba(248,113,113,0.1);  color: var(--accent);  border: 1px solid rgba(248,113,113,0.28); }
+  .tag--medium { background: rgba(251,191,36,0.1);   color: var(--accent2); border: 1px solid rgba(251,191,36,0.28); }
+
+  .front-title { font-size: 1.55rem; font-weight: 800; line-height: 1.2; margin-bottom: 1.2rem; color: #fff; }
+  .divider { height: 1px; background: linear-gradient(to right, var(--accent), transparent); margin-bottom: 1.2rem; opacity: 0.3; }
+
+  .question-block { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 0.8rem; }
+  .question-block p { font-size: 0.95rem; line-height: 1.65; color: rgba(232,234,240,0.82); }
+
+  .highlight {
+    color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.88em;
+    background: rgba(248,113,113,0.09); padding: 0.1em 0.3em; border-radius: 3px;
+  }
+
+  .diagram {
+    margin-top: 0.7rem; padding: 0.9rem 1.1rem;
+    background: rgba(255,255,255,0.025);
+    border-left: 2px solid var(--accent4);
+    border-radius: 0 8px 8px 0;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.73rem; line-height: 2;
+  }
+  .diagram .orig { color: var(--accent4); }
+  .diagram .want { color: var(--accent3); }
+  .diagram .arr  { color: var(--accent2); }
+  .diagram .dim  { color: var(--muted); }
+
+  .insight {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.25);
+    border-radius: 6px; padding: 0.45rem 0.8rem;
+    font-size: 0.76rem; color: var(--accent2); margin-top: 0.5rem;
+  }
+  .insight::before { content: '⚡'; font-size: 0.8em; }
+
+  .flip-hint {
+    margin-top: 1.5rem; font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted); display: flex; align-items: center; gap: 0.5rem;
+  }
+  .flip-hint::before { content: ''; width: 16px; height: 1px; background: var(--muted); }
+
+  /* BACK */
+  .back-title {
+    font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 1rem; opacity: 0.7;
+  }
+
+  /* 3 phase pills */
+  .phases {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.45rem; margin-bottom: 0.7rem;
+  }
+  .phase {
+    padding: 0.4rem 0.5rem; border-radius: 8px; text-align: center;
+    font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .phase.p1 { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.25); color: var(--accent); }
+  .phase.p2 { background: rgba(52,211,153,0.1);  border: 1px solid rgba(52,211,153,0.25);  color: var(--accent3); }
+  .phase.p3 { background: rgba(96,165,250,0.1);  border: 1px solid rgba(96,165,250,0.25);  color: var(--accent4); }
+
+  .steps { flex: 1; display: flex; flex-direction: column; gap: 0.55rem; overflow-y: auto; }
+  .step { display: flex; gap: 0.8rem; align-items: flex-start; }
+  .step-num {
+    flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; margin-top: 1px;
+  }
+  .step-num.s1 { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.3); color: var(--accent); }
+  .step-num.s2 { background: rgba(52,211,153,0.12);  border: 1px solid rgba(52,211,153,0.3);  color: var(--accent3); }
+  .step-num.s3 { background: rgba(96,165,250,0.12);  border: 1px solid rgba(96,165,250,0.3);  color: var(--accent4); }
+
+  .step-text { font-size: 0.8rem; line-height: 1.6; color: rgba(232,234,240,0.85); }
+  .step-text code {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.77em;
+    padding: 0.05em 0.3em; border-radius: 3px;
+  }
+  .step-text code.r { color: var(--accent);  background: rgba(248,113,113,0.09); }
+  .step-text code.g { color: var(--accent3); background: rgba(52,211,153,0.09); }
+  .step-text code.b { color: var(--accent4); background: rgba(96,165,250,0.09); }
+
+  .merge-visual {
+    padding: 0.6rem 1rem;
+    background: rgba(96,165,250,0.06); border: 1px solid rgba(96,165,250,0.18);
+    border-radius: 8px; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem; color: var(--accent4); line-height: 1.9; text-align: center;
+  }
+  .merge-visual .a { color: var(--accent4); }
+  .merge-visual .b { color: var(--accent);  }
+  .merge-visual .c { color: var(--accent3); }
+
+  .complexity-row { margin-top: 0.7rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  .complexity-box {
+    padding: 0.6rem 0.8rem; border-radius: 10px;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+  }
+  .complexity-box .c-label { font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.2rem; }
+  .complexity-box .c-val { font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 700; color: var(--accent2); }
+
+  .nav { margin-top: 1.4rem; display: flex; align-items: center; gap: 1rem; }
+  .btn {
+    padding: 0.55rem 1.4rem; border-radius: 8px;
+    border: 1px solid var(--border); background: rgba(248,113,113,0.06);
+    color: var(--accent); font-family: 'Syne', sans-serif;
+    font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; cursor: pointer; transition: background 0.2s, border-color 0.2s;
+  }
+  .btn:hover { background: rgba(248,113,113,0.13); border-color: rgba(248,113,113,0.4); }
+  .btn-flip {
+    padding: 0.55rem 1.4rem; border-radius: 8px;
+    background: var(--accent); color: #0f0a0a;
+    font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 800;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    border: none; cursor: pointer; transition: opacity 0.2s;
+  }
+  .btn-flip:hover { opacity: 0.85; }
+  .counter { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); margin-left: auto; }
+</style>
+</head>
+<body>
+
+<div class="label">Linked List · Two Pointers</div>
+
+<div class="scene" onclick="flipCard()">
+  <div class="card" id="card">
+
+    <!-- FRONT -->
+    <div class="face face--front">
+      <div class="tag-row">
+        <span class="tag tag--ll">Linked List</span>
+        <span class="tag tag--two">Two Pointers</span>
+        <span class="tag tag--medium">Medium</span>
+      </div>
+
+      <div class="front-title">Reorder List</div>
+      <div class="divider"></div>
+
+      <div class="question-block">
+        <p>Given the <span class="highlight">head</span> of a singly linked list, reorder it so nodes alternate from the front and back: <strong>L0 → Ln → L1 → Ln-1 → L2 → …</strong></p>
+        <p>Do it <strong>in-place</strong> without modifying node values.</p>
+
+        <div class="diagram">
+          <span class="dim">Input: &nbsp;</span> <span class="orig">1 → 2 → 3 → 4 → 5</span><br>
+          <span class="dim">Output:</span> <span class="want">1 → 5 → 2 → 4 → 3</span><br>
+          <span class="arr">↑first&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↑second (reversed half)</span>
+        </div>
+
+        <div class="insight">3 phases: find middle → reverse second half → merge</div>
+      </div>
+
+      <div class="flip-hint">Click to reveal solution</div>
+    </div>
+
+    <!-- BACK -->
+    <div class="face face--back">
+      <div class="back-title">Solution · Find Mid + Reverse + Merge</div>
+
+      <div class="phases">
+        <div class="phase p1">① Find Middle</div>
+        <div class="phase p2">② Reverse Half</div>
+        <div class="phase p3">③ Merge</div>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num s1">1</div>
+          <div class="step-text"><strong>Find middle</strong> with slow/fast pointers: <code class="r">slow</code> moves 1 step, <code class="r">fast</code> moves 2. When <code class="r">fast</code> hits null, <code class="r">slow</code> is at the midpoint.</div>
+        </div>
+        <div class="step">
+          <div class="step-num s2">2</div>
+          <div class="step-text"><strong>Reverse second half</strong> starting from <code class="g">slow</code>: use <code class="g">prev = null</code>, <code class="g">current = slow</code>. Standard in-place reversal → <code class="g">prev</code> becomes the new head of the reversed half.</div>
+        </div>
+        <div class="step">
+          <div class="step-num s3">3</div>
+          <div class="step-text"><strong>Merge the two halves:</strong> <code class="b">first = head</code>, <code class="b">second = prev</code>. Interleave until <code class="b">second.next == null</code>.</div>
+        </div>
+
+        <div class="merge-visual">
+          <span class="a">1</span> → <span class="b">5</span> → <span class="a">2</span> → <span class="b">4</span> → <span class="a">3</span><br>
+          <span style="color:var(--muted);font-size:0.68rem">save first.next → link first→second → link second→saved → advance both</span>
+        </div>
+
+        <div class="step">
+          <div class="step-num s3">★</div>
+          <div class="step-text"><strong>Stop condition:</strong> <code class="b">while(second.next != null)</code> — the reversed half is always ≤ the first half in length, so it's the safe bound.</div>
+        </div>
+      </div>
+
+      <div class="complexity-row">
+        <div class="complexity-box">
+          <div class="c-label">Time</div>
+          <div class="c-val">O(n)</div>
+        </div>
+        <div class="complexity-box">
+          <div class="c-label">Space</div>
+          <div class="c-val">O(1)</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="nav">
+  <button class="btn" onclick="reset()">↺ Reset</button>
+  <button class="btn-flip" onclick="flipCard()">Flip Card</button>
+  <span class="counter" id="counter">Front</span>
+</div>
+
+<script>
+  let flipped = false;
+  function flipCard() {
+    flipped = !flipped;
+    document.getElementById('card').classList.toggle('flipped', flipped);
+    document.getElementById('counter').textContent = flipped ? 'Answer' : 'Front';
+  }
+  function reset() {
+    flipped = false;
+    document.getElementById('card').classList.remove('flipped');
+    document.getElementById('counter').textContent = 'Front';
+  }
+</script>
+</body>
+</html>
