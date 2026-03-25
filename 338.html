@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Counting Bits – Flashcard</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #080c10;
+    --card-front: #0c1218;
+    --card-back: #0a1412;
+    --accent: #2dd4bf;
+    --accent2: #f472b6;
+    --accent3: #fbbf24;
+    --accent4: #a78bfa;
+    --text: #e8eaf0;
+    --muted: #507070;
+    --border: rgba(45,212,191,0.16);
+    --glow: rgba(45,212,191,0.07);
+  }
+
+  body {
+    background: var(--bg);
+    font-family: 'Syne', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 2rem; overflow-x: hidden;
+  }
+
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 55% 40% at 10% 20%, rgba(45,212,191,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse 45% 50% at 90% 80%, rgba(167,139,250,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .label {
+    font-size: 0.65rem; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 1.2rem; opacity: 0.75;
+  }
+
+  .scene { width: min(680px, 100%); height: 480px; perspective: 1200px; cursor: pointer; }
+
+  .card {
+    width: 100%; height: 100%; position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .card.flipped { transform: rotateY(180deg); }
+
+  .face {
+    position: absolute; inset: 0;
+    backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    border-radius: 20px; padding: 2.2rem 2.4rem;
+    border: 1px solid var(--border); display: flex; flex-direction: column;
+  }
+  .face--front {
+    background: var(--card-front);
+    box-shadow: 0 0 60px var(--glow), inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+  .face--back {
+    background: var(--card-back);
+    box-shadow: 0 0 60px rgba(45,212,191,0.06), inset 0 1px 0 rgba(255,255,255,0.04);
+    transform: rotateY(180deg);
+  }
+
+  .tag-row { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; padding: 0.25rem 0.6rem; border-radius: 4px;
+  }
+  .tag--bit  { background: rgba(45,212,191,0.11);  color: var(--accent);  border: 1px solid rgba(45,212,191,0.28); }
+  .tag--dp   { background: rgba(167,139,250,0.11); color: var(--accent4); border: 1px solid rgba(167,139,250,0.28); }
+  .tag--easy { background: rgba(251,191,36,0.1);   color: var(--accent3); border: 1px solid rgba(251,191,36,0.28); }
+
+  .front-title { font-size: 1.55rem; font-weight: 800; line-height: 1.2; margin-bottom: 1.2rem; color: #fff; }
+  .divider { height: 1px; background: linear-gradient(to right, var(--accent), transparent); margin-bottom: 1.2rem; opacity: 0.3; }
+
+  .question-block { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 0.85rem; }
+  .question-block p { font-size: 0.95rem; line-height: 1.65; color: rgba(232,234,240,0.82); }
+
+  .highlight {
+    color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.88em;
+    background: rgba(45,212,191,0.08); padding: 0.1em 0.3em; border-radius: 3px;
+  }
+
+  /* Result array visual */
+  .array-visual {
+    margin-top: 0.6rem;
+    display: flex; flex-direction: column; gap: 0.5rem;
+  }
+
+  .arr-row {
+    display: flex; align-items: center; gap: 0;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
+  }
+  .arr-label {
+    color: var(--muted); font-size: 0.62rem; letter-spacing: 0.08em;
+    text-transform: uppercase; width: 3.5rem; flex-shrink: 0;
+  }
+  .arr-cells { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+  .cell {
+    width: 30px; height: 30px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.75rem; border: 1px solid;
+  }
+  .cell.idx  { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); color: var(--muted); font-size: 0.65rem; }
+  .cell.zero { background: rgba(45,212,191,0.06);  border-color: rgba(45,212,191,0.2);  color: rgba(232,234,240,0.4); }
+  .cell.one  { background: rgba(45,212,191,0.14);  border-color: rgba(45,212,191,0.4);  color: var(--accent); }
+  .cell.two  { background: rgba(167,139,250,0.14); border-color: rgba(167,139,250,0.4); color: var(--accent4); }
+  .cell.three{ background: rgba(244,114,182,0.14); border-color: rgba(244,114,182,0.4); color: var(--accent2); }
+
+  .insight {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: rgba(244,114,182,0.1); border: 1px solid rgba(244,114,182,0.25);
+    border-radius: 6px; padding: 0.45rem 0.8rem;
+    font-size: 0.76rem; color: var(--accent2); margin-top: 0.3rem;
+  }
+  .insight::before { content: '⚡'; font-size: 0.8em; }
+
+  .flip-hint {
+    margin-top: 1.5rem; font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted); display: flex; align-items: center; gap: 0.5rem;
+  }
+  .flip-hint::before { content: ''; width: 16px; height: 1px; background: var(--muted); }
+
+  /* BACK */
+  .back-title {
+    font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 1.2rem; opacity: 0.7;
+  }
+
+  .steps { flex: 1; display: flex; flex-direction: column; gap: 0.65rem; overflow-y: auto; }
+  .step { display: flex; gap: 0.8rem; align-items: flex-start; }
+  .step-num {
+    flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
+    background: rgba(45,212,191,0.12); border: 1px solid rgba(45,212,191,0.3);
+    color: var(--accent); font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; margin-top: 1px;
+  }
+  .step-text { font-size: 0.81rem; line-height: 1.6; color: rgba(232,234,240,0.85); }
+  .step-text code {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.77em;
+    color: var(--accent); background: rgba(45,212,191,0.08);
+    padding: 0.05em 0.3em; border-radius: 3px;
+  }
+
+  /* DP formula box */
+  .formula-box {
+    padding: 0.7rem 1.1rem;
+    background: rgba(167,139,250,0.07); border: 1px solid rgba(167,139,250,0.2);
+    border-radius: 8px; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem; text-align: center; color: var(--accent4); line-height: 1.8;
+  }
+  .formula-box .sub { color: var(--accent3); }
+
+  /* Trace table */
+  .trace {
+    padding: 0.65rem 0.9rem;
+    background: rgba(45,212,191,0.05); border: 1px solid rgba(45,212,191,0.16);
+    border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.71rem;
+  }
+  .trace .t-hdr {
+    display: grid; grid-template-columns: 0.5fr 1fr 1.2fr 0.7fr 0.5fr;
+    font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); padding-bottom: 0.3rem;
+    border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 0.3rem;
+  }
+  .trace .t-row {
+    display: grid; grid-template-columns: 0.5fr 1fr 1.2fr 0.7fr 0.5fr;
+    line-height: 1.9; color: rgba(232,234,240,0.72);
+  }
+  .trace .t-row .hi  { color: var(--accent); }
+  .trace .t-row .op  { color: var(--accent3); }
+  .trace .t-row .ref { color: var(--accent4); }
+  .trace .t-row .res { color: var(--accent2); font-weight: 700; }
+
+  .complexity-row { margin-top: 0.9rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  .complexity-box {
+    padding: 0.6rem 0.8rem; border-radius: 10px;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+  }
+  .complexity-box .c-label { font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.2rem; }
+  .complexity-box .c-val { font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 700; color: var(--accent3); }
+
+  .nav { margin-top: 1.4rem; display: flex; align-items: center; gap: 1rem; }
+  .btn {
+    padding: 0.55rem 1.4rem; border-radius: 8px;
+    border: 1px solid var(--border); background: rgba(45,212,191,0.06);
+    color: var(--accent); font-family: 'Syne', sans-serif;
+    font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; cursor: pointer; transition: background 0.2s, border-color 0.2s;
+  }
+  .btn:hover { background: rgba(45,212,191,0.13); border-color: rgba(45,212,191,0.4); }
+  .btn-flip {
+    padding: 0.55rem 1.4rem; border-radius: 8px;
+    background: var(--accent); color: #080c10;
+    font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 800;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    border: none; cursor: pointer; transition: opacity 0.2s;
+  }
+  .btn-flip:hover { opacity: 0.85; }
+  .counter { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); margin-left: auto; }
+</style>
+</head>
+<body>
+
+<div class="label">Bit Manipulation · DP</div>
+
+<div class="scene" onclick="flipCard()">
+  <div class="card" id="card">
+
+    <!-- FRONT -->
+    <div class="face face--front">
+      <div class="tag-row">
+        <span class="tag tag--bit">Bit Manipulation</span>
+        <span class="tag tag--dp">DP</span>
+        <span class="tag tag--easy">Easy</span>
+      </div>
+
+      <div class="front-title">Counting Bits</div>
+      <div class="divider"></div>
+
+      <div class="question-block">
+        <p>Given an integer <span class="highlight">n</span>, return an array <span class="highlight">result</span> of length <span class="highlight">n+1</span> where <span class="highlight">result[i]</span> is the number of <strong>1 bits</strong> in the binary representation of <span class="highlight">i</span>.</p>
+
+        <div class="array-visual">
+          <div class="arr-row">
+            <span class="arr-label">index</span>
+            <div class="arr-cells">
+              <div class="cell idx">0</div><div class="cell idx">1</div><div class="cell idx">2</div>
+              <div class="cell idx">3</div><div class="cell idx">4</div><div class="cell idx">5</div>
+            </div>
+          </div>
+          <div class="arr-row">
+            <span class="arr-label">bits</span>
+            <div class="arr-cells">
+              <div class="cell zero">0</div><div class="cell one">1</div><div class="cell one">1</div>
+              <div class="cell two">2</div><div class="cell one">1</div><div class="cell two">2</div>
+            </div>
+          </div>
+          <div class="arr-row">
+            <span class="arr-label">binary</span>
+            <div class="arr-cells" style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--muted);gap:0.45rem;align-items:center">
+              <span style="width:30px;text-align:center">000</span>
+              <span style="width:30px;text-align:center">001</span>
+              <span style="width:30px;text-align:center">010</span>
+              <span style="width:30px;text-align:center">011</span>
+              <span style="width:30px;text-align:center">100</span>
+              <span style="width:30px;text-align:center">101</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="insight">Build each answer from a previously computed smaller number</div>
+      </div>
+
+      <div class="flip-hint">Click to reveal solution</div>
+    </div>
+
+    <!-- BACK -->
+    <div class="face face--back">
+      <div class="back-title">Solution · DP + Brian Kernighan's Trick</div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text"><strong>Init:</strong> create <code>result[n+1]</code>. <code>result[0] = 0</code> implicitly — zero has no set bits, and serves as the DP base case.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text"><strong>DP recurrence:</strong> for each <code>i</code>, strip its lowest set bit to get a smaller index already computed, then add 1.</div>
+        </div>
+      </div>
+
+      <div class="formula-box">
+        result[i] = result[<span class="sub">i &amp; (i−1)</span>] + 1<br>
+        <span style="font-size:0.68rem;color:var(--muted)">i &amp; (i−1) removes lowest set bit → already solved subproblem</span>
+      </div>
+
+      <!-- Trace -->
+      <div class="trace" style="margin-top:0.6rem">
+        <div class="t-hdr"><span>i</span><span>binary</span><span>i&(i-1)</span><span>ref</span><span>ans</span></div>
+        <div class="t-row"><span class="hi">1</span><span>001</span><span class="op">000 = 0</span><span class="ref">dp[0]=0</span><span class="res">1</span></div>
+        <div class="t-row"><span class="hi">2</span><span>010</span><span class="op">000 = 0</span><span class="ref">dp[0]=0</span><span class="res">1</span></div>
+        <div class="t-row"><span class="hi">3</span><span>011</span><span class="op">010 = 2</span><span class="ref">dp[2]=1</span><span class="res">2</span></div>
+        <div class="t-row"><span class="hi">5</span><span>101</span><span class="op">100 = 4</span><span class="ref">dp[4]=1</span><span class="res">2</span></div>
+      </div>
+
+      <div class="complexity-row">
+        <div class="complexity-box">
+          <div class="c-label">Time</div>
+          <div class="c-val">O(n)</div>
+        </div>
+        <div class="complexity-box">
+          <div class="c-label">Space</div>
+          <div class="c-val">O(n)</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="nav">
+  <button class="btn" onclick="reset()">↺ Reset</button>
+  <button class="btn-flip" onclick="flipCard()">Flip Card</button>
+  <span class="counter" id="counter">Front</span>
+</div>
+
+<script>
+  let flipped = false;
+  function flipCard() {
+    flipped = !flipped;
+    document.getElementById('card').classList.toggle('flipped', flipped);
+    document.getElementById('counter').textContent = flipped ? 'Answer' : 'Front';
+  }
+  function reset() {
+    flipped = false;
+    document.getElementById('card').classList.remove('flipped');
+    document.getElementById('counter').textContent = 'Front';
+  }
+</script>
+</body>
+</html>
