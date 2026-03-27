@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maximum Product Subarray – Flashcard</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a080c;
+    --card-front: #120e18;
+    --card-back: #0e1210;
+    --accent: #e879f9;
+    --accent2: #34d399;
+    --accent3: #f87171;
+    --accent4: #fbbf24;
+    --text: #e8eaf0;
+    --muted: #6a5070;
+    --border: rgba(232,121,249,0.16);
+    --glow: rgba(232,121,249,0.07);
+  }
+
+  body {
+    background: var(--bg);
+    font-family: 'Syne', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 2rem; overflow-x: hidden;
+  }
+
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 55% 40% at 10% 20%, rgba(232,121,249,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse 45% 50% at 90% 80%, rgba(52,211,153,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 1.2rem; opacity: 0.75; }
+
+  .scene { width: min(680px, 100%); height: 480px; perspective: 1200px; cursor: pointer; }
+  .card { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1); }
+  .card.flipped { transform: rotateY(180deg); }
+
+  .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 20px; padding: 2.2rem 2.4rem; border: 1px solid var(--border); display: flex; flex-direction: column; }
+  .face--front { background: var(--card-front); box-shadow: 0 0 60px var(--glow), inset 0 1px 0 rgba(255,255,255,0.04); }
+  .face--back  { background: var(--card-back);  box-shadow: 0 0 60px rgba(232,121,249,0.06), inset 0 1px 0 rgba(255,255,255,0.04); transform: rotateY(180deg); }
+
+  .tag-row { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .tag { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.25rem 0.6rem; border-radius: 4px; }
+  .tag--dp     { background: rgba(232,121,249,0.11); color: var(--accent);  border: 1px solid rgba(232,121,249,0.28); }
+  .tag--arr    { background: rgba(52,211,153,0.1);   color: var(--accent2); border: 1px solid rgba(52,211,153,0.28); }
+  .tag--medium { background: rgba(251,191,36,0.1);   color: var(--accent4); border: 1px solid rgba(251,191,36,0.28); }
+
+  .front-title { font-size: 1.45rem; font-weight: 800; line-height: 1.2; margin-bottom: 1.2rem; color: #fff; }
+  .divider { height: 1px; background: linear-gradient(to right, var(--accent), transparent); margin-bottom: 1.2rem; opacity: 0.3; }
+
+  .question-block { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 0.85rem; }
+  .question-block p { font-size: 0.95rem; line-height: 1.65; color: rgba(232,234,240,0.82); }
+  .highlight { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.88em; background: rgba(232,121,249,0.09); padding: 0.1em 0.3em; border-radius: 3px; }
+
+  /* Array visual with neg highlight */
+  .array-visual {
+    margin-top: 0.6rem; padding: 0.9rem 1.1rem;
+    background: rgba(255,255,255,0.025);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.73rem;
+  }
+  .arr-cells { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+  .acell { width: 34px; height: 34px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; border: 1px solid; }
+  .acell.pos  { background: rgba(52,211,153,0.12);   border-color: rgba(52,211,153,0.35);   color: var(--accent2); }
+  .acell.neg  { background: rgba(248,113,113,0.14);  border-color: rgba(248,113,113,0.4);   color: var(--accent3); }
+  .acell.zero { background: rgba(255,255,255,0.05);  border-color: rgba(255,255,255,0.12);  color: var(--muted); }
+  .acell.best { background: rgba(232,121,249,0.18);  border-color: rgba(232,121,249,0.5);   color: var(--accent); }
+  .arr-note { font-size: 0.68rem; color: var(--muted); line-height: 1.7; }
+  .arr-note .hi { color: var(--accent4); }
+
+  .insight { display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.25); border-radius: 6px; padding: 0.45rem 0.8rem; font-size: 0.76rem; color: var(--accent3); margin-top: 0.3rem; }
+  .insight::before { content: '⚡'; font-size: 0.8em; }
+
+  .flip-hint { margin-top: 1.5rem; font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 0.5rem; }
+  .flip-hint::before { content: ''; width: 16px; height: 1px; background: var(--muted); }
+
+  /* BACK */
+  .back-title { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 1.1rem; opacity: 0.7; }
+
+  .steps { flex: 1; display: flex; flex-direction: column; gap: 0.6rem; overflow-y: auto; }
+  .step { display: flex; gap: 0.8rem; align-items: flex-start; }
+  .step-num { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: rgba(232,121,249,0.12); border: 1px solid rgba(232,121,249,0.3); color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+  .step-text { font-size: 0.81rem; line-height: 1.6; color: rgba(232,234,240,0.85); }
+  .step-text code { font-family: 'JetBrains Mono', monospace; font-size: 0.77em; color: var(--accent); background: rgba(232,121,249,0.09); padding: 0.05em 0.3em; border-radius: 3px; }
+  .step-text code.g { color: var(--accent2); background: rgba(52,211,153,0.08); }
+  .step-text code.r { color: var(--accent3); background: rgba(248,113,113,0.08); }
+  .step-text code.y { color: var(--accent4); background: rgba(251,191,36,0.08); }
+
+  /* 3-candidate formula */
+  .formula-box {
+    padding: 0.7rem 1rem;
+    background: rgba(232,121,249,0.06); border: 1px solid rgba(232,121,249,0.2);
+    border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; line-height: 2; text-align: center;
+  }
+  .formula-box .fg { color: var(--accent2); }
+  .formula-box .fr { color: var(--accent3); }
+  .formula-box .fy { color: var(--accent4); }
+  .formula-box .fm { color: var(--accent); }
+
+  /* Trace table */
+  .trace-box { padding: 0.6rem 0.9rem; background: rgba(232,121,249,0.04); border: 1px solid rgba(232,121,249,0.13); border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.69rem; }
+  .trace-box .t-hdr { display: grid; grid-template-columns: 0.6fr 0.8fr 0.8fr 0.8fr; font-size: 0.57rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding-bottom: 0.3rem; border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 0.3rem; }
+  .trace-box .t-row { display: grid; grid-template-columns: 0.6fr 0.8fr 0.8fr 0.8fr; line-height: 1.9; color: rgba(232,234,240,0.72); }
+  .trace-box .t-row .num  { color: var(--accent4); }
+  .trace-box .t-row .mx   { color: var(--accent2); }
+  .trace-box .t-row .mn   { color: var(--accent3); }
+  .trace-box .t-row .res  { color: var(--accent); font-weight: 700; }
+
+  .why-box { padding: 0.6rem 1rem; background: rgba(248,113,113,0.06); border: 1px solid rgba(248,113,113,0.18); border-radius: 8px; font-size: 0.77rem; color: rgba(232,234,240,0.75); line-height: 1.65; }
+  .why-box strong { color: var(--accent3); }
+
+  .complexity-row { margin-top: 0.7rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  .complexity-box { padding: 0.6rem 0.8rem; border-radius: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); }
+  .complexity-box .c-label { font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.2rem; }
+  .complexity-box .c-val { font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 700; color: var(--accent4); }
+
+  .nav { margin-top: 1.4rem; display: flex; align-items: center; gap: 1rem; }
+  .btn { padding: 0.55rem 1.4rem; border-radius: 8px; border: 1px solid var(--border); background: rgba(232,121,249,0.06); color: var(--accent); font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: background 0.2s, border-color 0.2s; }
+  .btn:hover { background: rgba(232,121,249,0.13); border-color: rgba(232,121,249,0.4); }
+  .btn-flip { padding: 0.55rem 1.4rem; border-radius: 8px; background: var(--accent); color: #0a080c; font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; border: none; cursor: pointer; transition: opacity 0.2s; }
+  .btn-flip:hover { opacity: 0.85; }
+  .counter { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); margin-left: auto; }
+</style>
+</head>
+<body>
+
+<div class="label">Dynamic Programming · Array</div>
+
+<div class="scene" onclick="flipCard()">
+  <div class="card" id="card">
+
+    <!-- FRONT -->
+    <div class="face face--front">
+      <div class="tag-row">
+        <span class="tag tag--dp">DP</span>
+        <span class="tag tag--arr">Array</span>
+        <span class="tag tag--medium">Medium</span>
+      </div>
+
+      <div class="front-title">Maximum Product Subarray</div>
+      <div class="divider"></div>
+
+      <div class="question-block">
+        <p>Given an integer array <span class="highlight">nums</span>, find the contiguous subarray that has the <strong>largest product</strong> and return that product.</p>
+
+        <div class="array-visual">
+          <div class="arr-cells">
+            <div class="acell neg">-2</div>
+            <div class="acell pos">3</div>
+            <div class="acell neg">-4</div>
+          </div>
+          <div class="arr-note">
+            best subarray: <span class="hi">[-2, 3, -4]</span> → product = <span class="hi">24</span><br>
+            two negatives multiply to positive — <span class="hi">must track both max AND min</span>
+          </div>
+          <div class="arr-cells" style="margin-top:0.5rem">
+            <div class="acell pos">2</div>
+            <div class="acell pos">3</div>
+            <div class="acell neg">-2</div>
+            <div class="acell pos">4</div>
+          </div>
+          <div class="arr-note">best subarray: <span class="hi">[2, 3]</span> → product = <span class="hi">6</span></div>
+        </div>
+
+        <div class="insight">Two negatives make a positive — the min can flip to become the max</div>
+      </div>
+
+      <div class="flip-hint">Click to reveal solution</div>
+    </div>
+
+    <!-- BACK -->
+    <div class="face face--back">
+      <div class="back-title">Solution · Track Max AND Min Product</div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text"><strong>Init:</strong> <code class="g">maxProduct</code>, <code class="r">minProduct</code>, and <code>result</code> all start at <code>nums[0]</code>.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text"><strong>Each step has 3 candidates</strong> for the new max and min — current element alone, extend max, or extend min:</div>
+        </div>
+      </div>
+
+      <div class="formula-box">
+        <span class="fg">tempMax</span> = max(<span class="fy">nums[i]</span>, <span class="fg">maxP</span>×<span class="fy">nums[i]</span>, <span class="fr">minP</span>×<span class="fy">nums[i]</span>)<br>
+        <span class="fr">minProduct</span> = min(<span class="fy">nums[i]</span>, <span class="fg">maxP</span>×<span class="fy">nums[i]</span>, <span class="fr">minP</span>×<span class="fy">nums[i]</span>)<br>
+        <span class="fm">result</span> = max(<span class="fm">result</span>, <span class="fg">tempMax</span>)
+      </div>
+
+      <!-- Trace: nums = [-2, 3, -4] -->
+      <div class="trace-box" style="margin-top:0.55rem">
+        <div class="t-hdr"><span>i / num</span><span>maxP</span><span>minP</span><span>result</span></div>
+        <div class="t-row"><span class="num">0 / -2</span><span class="mx">-2</span><span class="mn">-2</span><span class="res">-2</span></div>
+        <div class="t-row"><span class="num">1 / 3</span><span class="mx">3</span><span class="mn">-6</span><span class="res">3</span></div>
+        <div class="t-row"><span class="num">2 / -4</span><span class="mx">24</span><span class="mn">-12</span><span class="res">24 ✓</span></div>
+      </div>
+
+      <div class="why-box" style="margin-top:0.55rem">
+        <strong>Why tempMax?</strong> Both max and min are derived from the same previous values. Computing <code>minProduct</code> first would overwrite values needed for <code>maxProduct</code> — <code>tempMax</code> saves the old max before it's clobbered.
+      </div>
+
+      <div class="complexity-row">
+        <div class="complexity-box">
+          <div class="c-label">Time</div>
+          <div class="c-val">O(n)</div>
+        </div>
+        <div class="complexity-box">
+          <div class="c-label">Space</div>
+          <div class="c-val">O(1)</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="nav">
+  <button class="btn" onclick="reset()">↺ Reset</button>
+  <button class="btn-flip" onclick="flipCard()">Flip Card</button>
+  <span class="counter" id="counter">Front</span>
+</div>
+
+<script>
+  let flipped = false;
+  function flipCard() {
+    flipped = !flipped;
+    document.getElementById('card').classList.toggle('flipped', flipped);
+    document.getElementById('counter').textContent = flipped ? 'Answer' : 'Front';
+  }
+  function reset() {
+    flipped = false;
+    document.getElementById('card').classList.remove('flipped');
+    document.getElementById('counter').textContent = 'Front';
+  }
+</script>
+</body>
+</html>
