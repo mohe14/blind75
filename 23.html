@@ -63,7 +63,6 @@
   .question-block p { font-size: 0.95rem; line-height: 1.65; color: rgba(232,234,240,0.82); }
   .highlight { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.88em; background: rgba(251,146,60,0.09); padding: 0.1em 0.3em; border-radius: 3px; }
 
-  /* Input lists visual */
   .lists-visual {
     margin-top: 0.6rem; padding: 0.9rem 1.1rem;
     background: rgba(255,255,255,0.025);
@@ -75,25 +74,11 @@
   .list-row:last-child { margin-bottom: 0; }
   .list-lbl { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; width: 2.5rem; flex-shrink: 0; color: var(--muted); }
   .ln { padding: 0.15rem 0.45rem; border-radius: 5px; font-weight: 700; font-size: 0.75rem; }
-  .ln.l0 { background: rgba(251,146,60,0.14); border: 1px solid rgba(251,146,60,0.35); color: var(--accent); }
-  .ln.l1 { background: rgba(56,189,248,0.12); border: 1px solid rgba(56,189,248,0.3);  color: var(--accent2); }
-  .ln.l2 { background: rgba(163,230,53,0.12); border: 1px solid rgba(163,230,53,0.3);  color: var(--accent3); }
+  .ln.l0  { background: rgba(251,146,60,0.14); border: 1px solid rgba(251,146,60,0.35); color: var(--accent); }
+  .ln.l1  { background: rgba(56,189,248,0.12); border: 1px solid rgba(56,189,248,0.3);  color: var(--accent2); }
+  .ln.l2  { background: rgba(163,230,53,0.12); border: 1px solid rgba(163,230,53,0.3);  color: var(--accent3); }
   .ln.out { background: rgba(232,121,249,0.1); border: 1px solid rgba(232,121,249,0.28); color: var(--accent4); }
   .arr { color: var(--muted); font-size: 0.75rem; }
-
-  /* min-heap visual */
-  .heap-box {
-    display: flex; align-items: center; gap: 0.5rem;
-    padding: 0.65rem 0.9rem;
-    background: rgba(251,146,60,0.07); border: 1px solid rgba(251,146,60,0.2);
-    border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.73rem;
-  }
-  .heap-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); flex-shrink: 0; }
-  .heap-cells { display: flex; gap: 0.3rem; flex-wrap: wrap; }
-  .hcell { padding: 0.2rem 0.5rem; border-radius: 5px; font-weight: 700; font-size: 0.75rem; border: 1px solid; }
-  .hcell.min { background: rgba(251,146,60,0.2); border-color: rgba(251,146,60,0.5); color: var(--accent); }
-  .hcell.h1  { background: rgba(56,189,248,0.12); border-color: rgba(56,189,248,0.35); color: var(--accent2); }
-  .hcell.h2  { background: rgba(163,230,53,0.1); border-color: rgba(163,230,53,0.3); color: var(--accent3); }
 
   .insight { display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(232,121,249,0.1); border: 1px solid rgba(232,121,249,0.25); border-radius: 6px; padding: 0.45rem 0.8rem; font-size: 0.76rem; color: var(--accent4); margin-top: 0.3rem; }
   .insight::before { content: '⚡'; font-size: 0.8em; }
@@ -113,7 +98,7 @@
   .step-text code.g { color: var(--accent3); background: rgba(163,230,53,0.08); }
   .step-text code.p { color: var(--accent4); background: rgba(232,121,249,0.08); }
 
-  /* Poll → attach → push cycle */
+  /* Poll → Attach → Push cycle */
   .cycle-box {
     display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.4rem;
     padding: 0.6rem 0.8rem;
@@ -127,14 +112,28 @@
   .cyc.att  .cv { color: var(--accent3); }
   .cyc.push .cv { color: var(--accent2); }
 
+  /* vs box */
+  .vs-box {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;
+    padding: 0.6rem 0.9rem;
+    background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
+  }
+  .vs-col .vc-label { font-size: 0.57rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.3rem; }
+  .vs-col.old { color: rgba(232,234,240,0.4); border-right: 1px solid rgba(255,255,255,0.06); padding-right: 0.6rem; }
+  .vs-col.new { color: var(--accent3); padding-left: 0.2rem; }
+  .vs-col.old .vc-label { }
+  .vs-col.new .vc-label { color: var(--accent3); }
+
   /* Trace table */
   .trace-box { padding: 0.6rem 0.9rem; background: rgba(251,146,60,0.05); border: 1px solid rgba(251,146,60,0.15); border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; }
-  .trace-box .t-hdr { display: grid; grid-template-columns: 1fr 1.2fr 1.5fr; font-size: 0.57rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding-bottom: 0.3rem; border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 0.3rem; }
-  .trace-box .t-row { display: grid; grid-template-columns: 1fr 1.2fr 1.5fr; line-height: 1.9; color: rgba(232,234,240,0.72); }
+  .trace-box .t-hdr { display: grid; grid-template-columns: 1.2fr 1.4fr 1.4fr; font-size: 0.57rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding-bottom: 0.3rem; border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 0.3rem; }
+  .trace-box .t-row { display: grid; grid-template-columns: 1.2fr 1.4fr 1.4fr; line-height: 1.9; color: rgba(232,234,240,0.72); }
   .trace-box .t-row .pop  { color: var(--accent); font-weight: 700; }
+  .trace-box .t-row .nxt  { color: var(--accent2); }
   .trace-box .t-row .out2 { color: var(--accent4); }
 
-  .complexity-row { margin-top: 0.8rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  .complexity-row { margin-top: 0.7rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
   .complexity-box { padding: 0.6rem 0.8rem; border-radius: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); }
   .complexity-box .c-label { font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.2rem; }
   .complexity-box .c-val { font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 700; color: var(--accent); }
@@ -187,7 +186,7 @@
           </div>
         </div>
 
-        <div class="insight">Min-heap always surfaces the globally smallest node in O(log k)</div>
+        <div class="insight">Heap stores ListNode directly — no index tracking needed</div>
       </div>
 
       <div class="flip-hint">Click to reveal solution</div>
@@ -195,34 +194,47 @@
 
     <!-- BACK -->
     <div class="face face--back">
-      <div class="back-title">Solution · Dummy Head + PriorityQueue (Min-Heap)</div>
+      <div class="back-title">Solution · Dummy Head + PriorityQueue&lt;ListNode&gt;</div>
 
       <div class="steps">
         <div class="step">
           <div class="step-num">1</div>
-          <div class="step-text"><strong>Init heap:</strong> <code class="b">PriorityQueue</code> sorted by node value. Seed it with the head of each non-null list as <code>[val, listIndex]</code>.</div>
+          <div class="step-text"><strong>Init heap:</strong> <code class="b">PriorityQueue&lt;ListNode&gt;</code> with comparator <code>(a,b) → Integer.compare(a.val, b.val)</code>. Add each non-null list head directly — no wrapper needed.</div>
         </div>
         <div class="step">
           <div class="step-num">2</div>
-          <div class="step-text"><strong>Dummy node:</strong> <code>dummy → current</code> tracks the tail of the result. Returning <code class="g">dummy.next</code> gives the merged head cleanly.</div>
+          <div class="step-text"><strong>Dummy node:</strong> <code>dummyNode → currentNode</code> builds the result. Poll the min node, attach it, then check <code>currentNode.next</code> — if non-null, push it into the heap.</div>
         </div>
       </div>
 
-      <!-- Poll → Attach → Push cycle -->
       <div class="cycle-box">
-        <div class="cyc poll"><div class="cl">① poll</div><div class="cv">pop min</div><div style="font-size:0.67rem;color:var(--muted)">O(log k)</div></div>
-        <div class="cyc att" ><div class="cl">② attach</div><div class="cv">current.next</div><div style="font-size:0.67rem;color:var(--muted)">= lists[i]</div></div>
-        <div class="cyc push"><div class="cl">③ push</div><div class="cv">next node</div><div style="font-size:0.67rem;color:var(--muted)">if non-null</div></div>
+        <div class="cyc poll"><div class="cl">① poll()</div><div class="cv">min ListNode</div><div style="font-size:0.67rem;color:var(--muted)">O(log k)</div></div>
+        <div class="cyc att" ><div class="cl">② attach</div><div class="cv">currentNode.next</div><div style="font-size:0.67rem;color:var(--muted)">= polled</div></div>
+        <div class="cyc push"><div class="cl">③ add()</div><div class="cv">currentNode.next</div><div style="font-size:0.67rem;color:var(--muted)">if non-null</div></div>
       </div>
 
-      <!-- Trace -->
+      <div class="vs-box" style="margin-top:0.55rem">
+        <div class="vs-col old">
+          <div class="vc-label">Previous version</div>
+          heap stores int[]{val, i}<br>
+          needs lists[i] lookup<br>
+          manual index tracking
+        </div>
+        <div class="vs-col new">
+          <div class="vc-label">This version ✓</div>
+          heap stores ListNode<br>
+          currentNode.next used directly<br>
+          cleaner, no index needed
+        </div>
+      </div>
+
       <div class="trace-box" style="margin-top:0.55rem">
-        <div class="t-hdr"><span>heap top</span><span>from list</span><span>output so far</span></div>
-        <div class="t-row"><span class="pop">1</span><span>L0 → push 4</span><span class="out2">1</span></div>
-        <div class="t-row"><span class="pop">1</span><span>L1 → push 3</span><span class="out2">1→1</span></div>
-        <div class="t-row"><span class="pop">2</span><span>L2 → push 6</span><span class="out2">1→1→2</span></div>
-        <div class="t-row"><span class="pop">3</span><span>L1 → push 4</span><span class="out2">1→1→2→3</span></div>
-        <div class="t-row"><span class="pop">4</span><span>L0 → push 5</span><span class="out2">…→4</span></div>
+        <div class="t-hdr"><span>poll()</span><span>push next</span><span>output</span></div>
+        <div class="t-row"><span class="pop">1(L0)</span><span class="nxt">4(L0)</span><span class="out2">1</span></div>
+        <div class="t-row"><span class="pop">1(L1)</span><span class="nxt">3(L1)</span><span class="out2">1→1</span></div>
+        <div class="t-row"><span class="pop">2(L2)</span><span class="nxt">6(L2)</span><span class="out2">1→1→2</span></div>
+        <div class="t-row"><span class="pop">3(L1)</span><span class="nxt">4(L1)</span><span class="out2">→3</span></div>
+        <div class="t-row"><span class="pop">4(L0)</span><span class="nxt">5(L0)</span><span class="out2">→4</span></div>
       </div>
 
       <div class="complexity-row">
