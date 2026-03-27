@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valid Parentheses – Flashcard</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0e;
+    --card-front: #10101c;
+    --card-back: #0e1318;
+    --accent: #f472b6;
+    --accent2: #fbbf24;
+    --accent3: #34d399;
+    --accent4: #60a5fa;
+    --text: #e8eaf0;
+    --muted: #60507a;
+    --border: rgba(244,114,182,0.16);
+    --glow: rgba(244,114,182,0.07);
+  }
+
+  body {
+    background: var(--bg);
+    font-family: 'Syne', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 2rem; overflow-x: hidden;
+  }
+
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 55% 40% at 10% 20%, rgba(244,114,182,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse 45% 50% at 90% 80%, rgba(96,165,250,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 1.2rem; opacity: 0.75; }
+
+  .scene { width: min(680px, 100%); height: 480px; perspective: 1200px; cursor: pointer; }
+  .card { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1); }
+  .card.flipped { transform: rotateY(180deg); }
+
+  .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 20px; padding: 2.2rem 2.4rem; border: 1px solid var(--border); display: flex; flex-direction: column; }
+  .face--front { background: var(--card-front); box-shadow: 0 0 60px var(--glow), inset 0 1px 0 rgba(255,255,255,0.04); }
+  .face--back  { background: var(--card-back);  box-shadow: 0 0 60px rgba(244,114,182,0.06), inset 0 1px 0 rgba(255,255,255,0.04); transform: rotateY(180deg); }
+
+  .tag-row { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .tag { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.25rem 0.6rem; border-radius: 4px; }
+  .tag--str  { background: rgba(96,165,250,0.12);  color: var(--accent4); border: 1px solid rgba(96,165,250,0.28); }
+  .tag--stk  { background: rgba(244,114,182,0.11); color: var(--accent);  border: 1px solid rgba(244,114,182,0.28); }
+  .tag--easy { background: rgba(52,211,153,0.1);   color: var(--accent3); border: 1px solid rgba(52,211,153,0.28); }
+
+  .front-title { font-size: 1.55rem; font-weight: 800; line-height: 1.2; margin-bottom: 1.2rem; color: #fff; }
+  .divider { height: 1px; background: linear-gradient(to right, var(--accent), transparent); margin-bottom: 1.2rem; opacity: 0.3; }
+
+  .question-block { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 0.85rem; }
+  .question-block p { font-size: 0.95rem; line-height: 1.65; color: rgba(232,234,240,0.82); }
+  .highlight { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.88em; background: rgba(244,114,182,0.09); padding: 0.1em 0.3em; border-radius: 3px; }
+
+  /* Stack animation diagram */
+  .stack-demo {
+    margin-top: 0.6rem; padding: 0.9rem 1.1rem;
+    background: rgba(255,255,255,0.025);
+    border-left: 2px solid var(--accent4);
+    border-radius: 0 8px 8px 0;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.73rem;
+  }
+  .demo-row { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.45rem; }
+  .demo-input { color: var(--accent4); letter-spacing: 0.15em; font-size: 0.8rem; }
+  .demo-arrow { color: var(--muted); }
+  .stack-state { display: flex; gap: 0.25rem; align-items: center; }
+  .stk-cell { padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 700; font-size: 0.75rem; }
+  .stk-cell.open  { background: rgba(251,191,36,0.14); border: 1px solid rgba(251,191,36,0.35); color: var(--accent2); }
+  .stk-cell.match { background: rgba(52,211,153,0.14); border: 1px solid rgba(52,211,153,0.35); color: var(--accent3); }
+  .stk-cell.err   { background: rgba(244,114,182,0.14); border: 1px solid rgba(244,114,182,0.35); color: var(--accent); }
+  .demo-result { font-size: 0.68rem; color: var(--muted); margin-left: auto; }
+  .demo-result.ok  { color: var(--accent3); }
+  .demo-result.bad { color: var(--accent); }
+
+  .insight { display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.25); border-radius: 6px; padding: 0.45rem 0.8rem; font-size: 0.76rem; color: var(--accent2); margin-top: 0.3rem; }
+  .insight::before { content: '⚡'; font-size: 0.8em; }
+
+  .flip-hint { margin-top: 1.5rem; font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 0.5rem; }
+  .flip-hint::before { content: ''; width: 16px; height: 1px; background: var(--muted); }
+
+  /* BACK */
+  .back-title { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 1.2rem; opacity: 0.7; }
+
+  .steps { flex: 1; display: flex; flex-direction: column; gap: 0.65rem; overflow-y: auto; }
+  .step { display: flex; gap: 0.8rem; align-items: flex-start; }
+  .step-num { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: rgba(244,114,182,0.12); border: 1px solid rgba(244,114,182,0.3); color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+  .step-text { font-size: 0.81rem; line-height: 1.6; color: rgba(232,234,240,0.85); }
+  .step-text code { font-family: 'JetBrains Mono', monospace; font-size: 0.77em; color: var(--accent); background: rgba(244,114,182,0.09); padding: 0.05em 0.3em; border-radius: 3px; }
+  .step-text code.y { color: var(--accent2); background: rgba(251,191,36,0.08); }
+  .step-text code.g { color: var(--accent3); background: rgba(52,211,153,0.08); }
+  .step-text code.b { color: var(--accent4); background: rgba(96,165,250,0.08); }
+
+  /* Map visual */
+  .map-box {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.4rem;
+    padding: 0.65rem 0.9rem;
+    background: rgba(96,165,250,0.06); border: 1px solid rgba(96,165,250,0.18);
+    border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; text-align: center;
+  }
+  .map-entry { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; }
+  .map-close { font-size: 1rem; color: var(--accent); }
+  .map-open  { font-size: 1rem; color: var(--accent2); }
+  .map-lbl   { font-size: 0.58rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .map-arrow-down { font-size: 0.7rem; color: var(--muted); }
+
+  /* 3-condition grid */
+  .conditions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+  .cond-box { padding: 0.55rem 0.8rem; border-radius: 8px; font-size: 0.76rem; line-height: 1.6; }
+  .cond-box.push { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.2); color: var(--accent2); }
+  .cond-box.pop  { background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.2); color: var(--accent3); }
+  .cond-box .cl  { font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.7; margin-bottom: 0.2rem; }
+  .cond-box code { font-family: 'JetBrains Mono', monospace; font-size: 0.75em; }
+
+  .complexity-row { margin-top: 0.8rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  .complexity-box { padding: 0.6rem 0.8rem; border-radius: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); }
+  .complexity-box .c-label { font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.2rem; }
+  .complexity-box .c-val { font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 700; color: var(--accent2); }
+
+  .nav { margin-top: 1.4rem; display: flex; align-items: center; gap: 1rem; }
+  .btn { padding: 0.55rem 1.4rem; border-radius: 8px; border: 1px solid var(--border); background: rgba(244,114,182,0.06); color: var(--accent); font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: background 0.2s, border-color 0.2s; }
+  .btn:hover { background: rgba(244,114,182,0.13); border-color: rgba(244,114,182,0.4); }
+  .btn-flip { padding: 0.55rem 1.4rem; border-radius: 8px; background: var(--accent); color: #0a0a0e; font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; border: none; cursor: pointer; transition: opacity 0.2s; }
+  .btn-flip:hover { opacity: 0.85; }
+  .counter { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); margin-left: auto; }
+</style>
+</head>
+<body>
+
+<div class="label">String · Stack</div>
+
+<div class="scene" onclick="flipCard()">
+  <div class="card" id="card">
+
+    <!-- FRONT -->
+    <div class="face face--front">
+      <div class="tag-row">
+        <span class="tag tag--str">String</span>
+        <span class="tag tag--stk">Stack</span>
+        <span class="tag tag--easy">Easy</span>
+      </div>
+
+      <div class="front-title">Valid Parentheses</div>
+      <div class="divider"></div>
+
+      <div class="question-block">
+        <p>Given a string <span class="highlight">s</span> containing only <span class="highlight">(</span> <span class="highlight">)</span> <span class="highlight">{</span> <span class="highlight">}</span> <span class="highlight">[</span> <span class="highlight">]</span>, determine if it is <strong>valid</strong>. Every open bracket must be closed by the same type in the correct order.</p>
+
+        <div class="stack-demo">
+          <div class="demo-row">
+            <span class="demo-input">( [ ] )</span>
+            <span class="demo-arrow">→</span>
+            <div class="stack-state">
+              <div class="stk-cell match">(</div>
+              <div class="stk-cell match">[</div>
+            </div>
+            <span class="demo-result ok">✓ valid</span>
+          </div>
+          <div class="demo-row">
+            <span class="demo-input">( ] )</span>
+            <span class="demo-arrow">→</span>
+            <div class="stack-state">
+              <div class="stk-cell open">(</div>
+              <div class="stk-cell err">]≠(</div>
+            </div>
+            <span class="demo-result bad">✗ invalid</span>
+          </div>
+          <div class="demo-row">
+            <span class="demo-input">( ( )</span>
+            <span class="demo-arrow">→</span>
+            <div class="stack-state">
+              <div class="stk-cell open">(</div>
+            </div>
+            <span class="demo-result bad">✗ not empty</span>
+          </div>
+        </div>
+
+        <div class="insight">Map closing → opening so every close bracket knows its expected match</div>
+      </div>
+
+      <div class="flip-hint">Click to reveal solution</div>
+    </div>
+
+    <!-- BACK -->
+    <div class="face face--back">
+      <div class="back-title">Solution · Stack + HashMap</div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text"><strong>Build map</strong> of closing → opening brackets: <code class="y">)</code>→<code class="y">(</code>, <code class="y">}</code>→<code class="y">{</code>, <code class="y">]</code>→<code class="y">[</code>. This lets any close bracket instantly look up its expected counterpart.</div>
+        </div>
+      </div>
+
+      <div class="map-box">
+        <div class="map-entry">
+          <span class="map-close">)</span>
+          <span class="map-arrow-down">↓</span>
+          <span class="map-open">(</span>
+          <span class="map-lbl">closes</span>
+        </div>
+        <div class="map-entry">
+          <span class="map-close">}</span>
+          <span class="map-arrow-down">↓</span>
+          <span class="map-open">{</span>
+          <span class="map-lbl">closes</span>
+        </div>
+        <div class="map-entry">
+          <span class="map-close">]</span>
+          <span class="map-arrow-down">↓</span>
+          <span class="map-open">[</span>
+          <span class="map-lbl">closes</span>
+        </div>
+      </div>
+
+      <div class="steps" style="margin-top:0.6rem">
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text"><strong>Iterate characters:</strong> if it's an <strong>open</strong> bracket (not in map) → <code class="y">stack.push(c)</code>. If it's a <strong>close</strong> bracket → check the top.</div>
+        </div>
+      </div>
+
+      <div class="conditions">
+        <div class="cond-box push">
+          <div class="cl">Open bracket</div>
+          Not in map →<br><code>stack.push(c)</code>
+        </div>
+        <div class="cond-box pop">
+          <div class="cl">Close bracket</div>
+          stack empty OR<br>top ≠ map.get(c) → <code>false</code><br>else <code>stack.pop()</code>
+        </div>
+      </div>
+
+      <div class="step" style="margin-top:0.6rem">
+        <div class="step-num">3</div>
+        <div class="step-text"><strong>Return</strong> <code class="g">stack.isEmpty()</code> — if any unmatched openers remain, the string is invalid.</div>
+      </div>
+
+      <div class="complexity-row">
+        <div class="complexity-box">
+          <div class="c-label">Time</div>
+          <div class="c-val">O(n)</div>
+        </div>
+        <div class="complexity-box">
+          <div class="c-label">Space</div>
+          <div class="c-val">O(n)</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="nav">
+  <button class="btn" onclick="reset()">↺ Reset</button>
+  <button class="btn-flip" onclick="flipCard()">Flip Card</button>
+  <span class="counter" id="counter">Front</span>
+</div>
+
+<script>
+  let flipped = false;
+  function flipCard() {
+    flipped = !flipped;
+    document.getElementById('card').classList.toggle('flipped', flipped);
+    document.getElementById('counter').textContent = flipped ? 'Answer' : 'Front';
+  }
+  function reset() {
+    flipped = false;
+    document.getElementById('card').classList.remove('flipped');
+    document.getElementById('counter').textContent = 'Front';
+  }
+</script>
+</body>
+</html>
