@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find Min in Rotated Array – Flashcard</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #080c0a;
+    --card-front: #0e1610;
+    --card-back: #0c1018;
+    --accent: #86efac;
+    --accent2: #fcd34d;
+    --accent3: #f87171;
+    --accent4: #7dd3fc;
+    --text: #e8eaf0;
+    --muted: #4a7060;
+    --border: rgba(134,239,172,0.16);
+    --glow: rgba(134,239,172,0.07);
+  }
+
+  body {
+    background: var(--bg);
+    font-family: 'Syne', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 2rem; overflow-x: hidden;
+  }
+
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 55% 40% at 10% 20%, rgba(134,239,172,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse 45% 50% at 90% 80%, rgba(125,211,252,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 1.2rem; opacity: 0.75; }
+
+  .scene { width: min(680px, 100%); height: 480px; perspective: 1200px; cursor: pointer; }
+  .card { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1); }
+  .card.flipped { transform: rotateY(180deg); }
+
+  .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 20px; padding: 2.2rem 2.4rem; border: 1px solid var(--border); display: flex; flex-direction: column; }
+  .face--front { background: var(--card-front); box-shadow: 0 0 60px var(--glow), inset 0 1px 0 rgba(255,255,255,0.04); }
+  .face--back  { background: var(--card-back);  box-shadow: 0 0 60px rgba(134,239,172,0.06), inset 0 1px 0 rgba(255,255,255,0.04); transform: rotateY(180deg); }
+
+  .tag-row { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .tag { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.25rem 0.6rem; border-radius: 4px; }
+  .tag--bs     { background: rgba(134,239,172,0.11); color: var(--accent);  border: 1px solid rgba(134,239,172,0.28); }
+  .tag--arr    { background: rgba(125,211,252,0.11); color: var(--accent4); border: 1px solid rgba(125,211,252,0.28); }
+  .tag--medium { background: rgba(252,211,77,0.1);   color: var(--accent2); border: 1px solid rgba(252,211,77,0.28); }
+
+  .front-title { font-size: 1.35rem; font-weight: 800; line-height: 1.2; margin-bottom: 1.2rem; color: #fff; }
+  .divider { height: 1px; background: linear-gradient(to right, var(--accent), transparent); margin-bottom: 1.2rem; opacity: 0.3; }
+
+  .question-block { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 0.85rem; }
+  .question-block p { font-size: 0.95rem; line-height: 1.65; color: rgba(232,234,240,0.82); }
+  .highlight { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.88em; background: rgba(134,239,172,0.08); padding: 0.1em 0.3em; border-radius: 3px; }
+
+  /* Rotation diagram */
+  .rot-visual {
+    margin-top: 0.6rem; padding: 0.9rem 1.1rem;
+    background: rgba(255,255,255,0.025);
+    border-left: 2px solid var(--accent4);
+    border-radius: 0 8px 8px 0;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.73rem;
+  }
+  .cell-row { display: flex; gap: 0.3rem; margin-bottom: 0.45rem; align-items: center; flex-wrap: wrap; }
+  .rcell { width: 34px; height: 34px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.78rem; border: 1px solid; }
+  .rcell.norm  { background: rgba(125,211,252,0.1);  border-color: rgba(125,211,252,0.3);  color: var(--accent4); }
+  .rcell.pivot { background: rgba(248,113,113,0.18); border-color: rgba(248,113,113,0.5);  color: var(--accent3); }
+  .rcell.min   { background: rgba(134,239,172,0.18); border-color: rgba(134,239,172,0.5);  color: var(--accent); }
+  .rcell.mid   { background: rgba(252,211,77,0.14);  border-color: rgba(252,211,77,0.4);   color: var(--accent2); }
+  .rot-label { font-size: 0.65rem; color: var(--muted); margin-top: 0.1rem; }
+
+  .insight { display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(252,211,77,0.1); border: 1px solid rgba(252,211,77,0.25); border-radius: 6px; padding: 0.45rem 0.8rem; font-size: 0.76rem; color: var(--accent2); margin-top: 0.3rem; }
+  .insight::before { content: '⚡'; font-size: 0.8em; }
+
+  .flip-hint { margin-top: 1.5rem; font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 0.5rem; }
+  .flip-hint::before { content: ''; width: 16px; height: 1px; background: var(--muted); }
+
+  /* BACK */
+  .back-title { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 1.1rem; opacity: 0.7; }
+
+  .steps { flex: 1; display: flex; flex-direction: column; gap: 0.6rem; overflow-y: auto; }
+  .step { display: flex; gap: 0.8rem; align-items: flex-start; }
+  .step-num { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: rgba(134,239,172,0.12); border: 1px solid rgba(134,239,172,0.3); color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+  .step-text { font-size: 0.81rem; line-height: 1.6; color: rgba(232,234,240,0.85); }
+  .step-text code { font-family: 'JetBrains Mono', monospace; font-size: 0.77em; color: var(--accent); background: rgba(134,239,172,0.08); padding: 0.05em 0.3em; border-radius: 3px; }
+  .step-text code.y { color: var(--accent2); background: rgba(252,211,77,0.08); }
+  .step-text code.r { color: var(--accent3); background: rgba(248,113,113,0.08); }
+  .step-text code.b { color: var(--accent4); background: rgba(125,211,252,0.08); }
+
+  /* 3-condition decision grid */
+  .conditions { display: flex; flex-direction: column; gap: 0.4rem; }
+  .cond-row { display: flex; gap: 0.5rem; align-items: stretch; }
+  .cond-box { flex: 1; padding: 0.5rem 0.75rem; border-radius: 8px; font-size: 0.74rem; line-height: 1.6; }
+  .cond-box .cl { font-size: 0.57rem; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.7; margin-bottom: 0.15rem; }
+  .cond-box code { font-family: 'JetBrains Mono', monospace; font-size: 0.76em; }
+  .cond-box.drop  { background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); color: var(--accent3); }
+  .cond-box.rise  { background: rgba(134,239,172,0.07); border: 1px solid rgba(134,239,172,0.2); color: var(--accent); }
+  .cond-box.left  { background: rgba(125,211,252,0.07); border: 1px solid rgba(125,211,252,0.18); color: var(--accent4); }
+  .cond-box.right { background: rgba(252,211,77,0.07);  border: 1px solid rgba(252,211,77,0.18);  color: var(--accent2); }
+
+  .early-box { padding: 0.6rem 1rem; background: rgba(134,239,172,0.06); border: 1px solid rgba(134,239,172,0.18); border-radius: 8px; font-size: 0.77rem; color: rgba(232,234,240,0.75); line-height: 1.65; }
+  .early-box strong { color: var(--accent); }
+
+  .complexity-row { margin-top: 0.7rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  .complexity-box { padding: 0.6rem 0.8rem; border-radius: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); }
+  .complexity-box .c-label { font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.2rem; }
+  .complexity-box .c-val { font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 700; color: var(--accent2); }
+
+  .nav { margin-top: 1.4rem; display: flex; align-items: center; gap: 1rem; }
+  .btn { padding: 0.55rem 1.4rem; border-radius: 8px; border: 1px solid var(--border); background: rgba(134,239,172,0.06); color: var(--accent); font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: background 0.2s, border-color 0.2s; }
+  .btn:hover { background: rgba(134,239,172,0.13); border-color: rgba(134,239,172,0.4); }
+  .btn-flip { padding: 0.55rem 1.4rem; border-radius: 8px; background: var(--accent); color: #080c0a; font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; border: none; cursor: pointer; transition: opacity 0.2s; }
+  .btn-flip:hover { opacity: 0.85; }
+  .counter { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); margin-left: auto; }
+</style>
+</head>
+<body>
+
+<div class="label">Binary Search · Array</div>
+
+<div class="scene" onclick="flipCard()">
+  <div class="card" id="card">
+
+    <!-- FRONT -->
+    <div class="face face--front">
+      <div class="tag-row">
+        <span class="tag tag--bs">Binary Search</span>
+        <span class="tag tag--arr">Array</span>
+        <span class="tag tag--medium">Medium</span>
+      </div>
+
+      <div class="front-title">Find Min in Rotated Sorted Array</div>
+      <div class="divider"></div>
+
+      <div class="question-block">
+        <p>Given a sorted array rotated at an unknown pivot, find the <strong>minimum element</strong> in <span class="highlight">O(log n)</span>. All values are unique.</p>
+
+        <div class="rot-visual">
+          <div class="cell-row">
+            <div class="rcell norm">3</div>
+            <div class="rcell norm">4</div>
+            <div class="rcell norm">5</div>
+            <div class="rcell pivot">6</div>
+            <div class="rcell min">1</div>
+            <div class="rcell norm">2</div>
+          </div>
+          <div class="rot-label">pivot at 6→1 drop — min is always right after the drop point</div>
+          <div class="cell-row" style="margin-top:0.5rem">
+            <div class="rcell norm">4</div>
+            <div class="rcell norm">5</div>
+            <div class="rcell mid">6</div>
+            <div class="rcell norm">7</div>
+            <div class="rcell min">0</div>
+            <div class="rcell norm">1</div>
+            <div class="rcell norm">2</div>
+          </div>
+          <div class="rot-label">mid=6 &gt; nums[0]=4 → rotation is to the right → move left=mid+1</div>
+        </div>
+
+        <div class="insight">The min lives just after the only drop point in the array</div>
+      </div>
+
+      <div class="flip-hint">Click to reveal solution</div>
+    </div>
+
+    <!-- BACK -->
+    <div class="face face--back">
+      <div class="back-title">Solution · Binary Search for Drop Point</div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text"><strong>Early exits:</strong> single element → return it. If <code>nums[right] &gt; nums[0]</code> the array is not rotated → return <code>nums[0]</code>.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text"><strong>Binary search</strong> for the <strong>drop point</strong> — the unique index where <code class="r">nums[mid] &gt; nums[mid+1]</code> or <code class="r">nums[mid-1] &gt; nums[mid]</code>:</div>
+        </div>
+      </div>
+
+      <div class="conditions">
+        <div class="cond-row">
+          <div class="cond-box drop">
+            <div class="cl">Drop after mid</div>
+            <code>nums[mid] &gt; nums[mid+1]</code><br>→ return <code>nums[mid+1]</code>
+          </div>
+          <div class="cond-box rise">
+            <div class="cl">Drop before mid</div>
+            <code>nums[mid-1] &gt; nums[mid]</code><br>→ return <code>nums[mid]</code>
+          </div>
+        </div>
+        <div class="cond-row">
+          <div class="cond-box left">
+            <div class="cl">Mid in left half</div>
+            <code>nums[mid] &gt; nums[0]</code><br>→ <code>left = mid+1</code>
+          </div>
+          <div class="cond-box right">
+            <div class="cl">Mid in right half</div>
+            otherwise<br>→ <code>right = mid-1</code>
+          </div>
+        </div>
+      </div>
+
+      <div class="early-box" style="margin-top:0.6rem">
+        <strong>Why track nums[0]?</strong> In a rotated array, the left portion is always greater than <code>nums[0]</code> and the right portion is always smaller. Comparing <code>nums[mid]</code> to <code>nums[0]</code> tells you which side of the rotation you're on.
+      </div>
+
+      <div class="complexity-row">
+        <div class="complexity-box">
+          <div class="c-label">Time</div>
+          <div class="c-val">O(log n)</div>
+        </div>
+        <div class="complexity-box">
+          <div class="c-label">Space</div>
+          <div class="c-val">O(1)</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="nav">
+  <button class="btn" onclick="reset()">↺ Reset</button>
+  <button class="btn-flip" onclick="flipCard()">Flip Card</button>
+  <span class="counter" id="counter">Front</span>
+</div>
+
+<script>
+  let flipped = false;
+  function flipCard() {
+    flipped = !flipped;
+    document.getElementById('card').classList.toggle('flipped', flipped);
+    document.getElementById('counter').textContent = flipped ? 'Answer' : 'Front';
+  }
+  function reset() {
+    flipped = false;
+    document.getElementById('card').classList.remove('flipped');
+    document.getElementById('counter').textContent = 'Front';
+  }
+</script>
+</body>
+</html>
