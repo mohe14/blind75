@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Remove Nth From End – Flashcard</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #090d0a;
+    --card-front: #0d1610;
+    --card-back: #0a1018;
+    --accent: #4ade80;
+    --accent2: #f97316;
+    --accent3: #38bdf8;
+    --accent4: #e879f9;
+    --text: #e8eaf0;
+    --muted: #4a7055;
+    --border: rgba(74,222,128,0.16);
+    --glow: rgba(74,222,128,0.07);
+  }
+
+  body {
+    background: var(--bg);
+    font-family: 'Syne', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 2rem; overflow-x: hidden;
+  }
+
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 55% 40% at 10% 20%, rgba(74,222,128,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse 45% 50% at 90% 80%, rgba(56,189,248,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 1.2rem; opacity: 0.75; }
+
+  .scene { width: min(680px, 100%); height: 480px; perspective: 1200px; cursor: pointer; }
+
+  .card { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1); }
+  .card.flipped { transform: rotateY(180deg); }
+
+  .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 20px; padding: 2.2rem 2.4rem; border: 1px solid var(--border); display: flex; flex-direction: column; }
+  .face--front { background: var(--card-front); box-shadow: 0 0 60px var(--glow), inset 0 1px 0 rgba(255,255,255,0.04); }
+  .face--back { background: var(--card-back); box-shadow: 0 0 60px rgba(74,222,128,0.06), inset 0 1px 0 rgba(255,255,255,0.04); transform: rotateY(180deg); }
+
+  .tag-row { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .tag { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.25rem 0.6rem; border-radius: 4px; }
+  .tag--ll     { background: rgba(56,189,248,0.12);  color: var(--accent3); border: 1px solid rgba(56,189,248,0.28); }
+  .tag--two    { background: rgba(74,222,128,0.1);   color: var(--accent);  border: 1px solid rgba(74,222,128,0.28); }
+  .tag--medium { background: rgba(249,115,22,0.11);  color: var(--accent2); border: 1px solid rgba(249,115,22,0.28); }
+
+  .front-title { font-size: 1.45rem; font-weight: 800; line-height: 1.2; margin-bottom: 1.2rem; color: #fff; }
+  .divider { height: 1px; background: linear-gradient(to right, var(--accent), transparent); margin-bottom: 1.2rem; opacity: 0.3; }
+
+  .question-block { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 0.85rem; }
+  .question-block p { font-size: 0.95rem; line-height: 1.65; color: rgba(232,234,240,0.82); }
+
+  .highlight { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.88em; background: rgba(74,222,128,0.08); padding: 0.1em 0.3em; border-radius: 3px; }
+
+  .diagram { margin-top: 0.6rem; padding: 1rem 1.1rem; background: rgba(255,255,255,0.025); border-left: 2px solid var(--accent3); border-radius: 0 8px 8px 0; font-family: 'JetBrains Mono', monospace; font-size: 0.73rem; }
+  .nodes-row { display: flex; align-items: center; gap: 0.3rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
+  .node-box { padding: 0.2rem 0.5rem; border-radius: 5px; font-weight: 700; font-size: 0.75rem; }
+  .node-box.dummy { background: rgba(232,121,249,0.12); border: 1px solid rgba(232,121,249,0.3); color: var(--accent4); }
+  .node-box.norm  { background: rgba(56,189,248,0.1);   border: 1px solid rgba(56,189,248,0.28); color: var(--accent3); }
+  .node-box.del   { background: rgba(249,115,22,0.15);  border: 1px solid rgba(249,115,22,0.4);  color: var(--accent2); text-decoration: line-through; }
+  .arrow { color: var(--muted); font-size: 0.8rem; }
+  .diagram .dim { color: var(--muted); font-size: 0.68rem; margin-top: 0.4rem; display: block; }
+
+  .insight { display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(249,115,22,0.1); border: 1px solid rgba(249,115,22,0.25); border-radius: 6px; padding: 0.45rem 0.8rem; font-size: 0.76rem; color: var(--accent2); margin-top: 0.3rem; }
+  .insight::before { content: '⚡'; font-size: 0.8em; }
+
+  .flip-hint { margin-top: 1.5rem; font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 0.5rem; }
+  .flip-hint::before { content: ''; width: 16px; height: 1px; background: var(--muted); }
+
+  .back-title { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 1.2rem; opacity: 0.7; }
+
+  .steps { flex: 1; display: flex; flex-direction: column; gap: 0.62rem; overflow-y: auto; }
+  .step { display: flex; gap: 0.8rem; align-items: flex-start; }
+  .step-num { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.3); color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+  .step-text { font-size: 0.81rem; line-height: 1.6; color: rgba(232,234,240,0.85); }
+  .step-text code { font-family: 'JetBrains Mono', monospace; font-size: 0.77em; color: var(--accent); background: rgba(74,222,128,0.08); padding: 0.05em 0.3em; border-radius: 3px; }
+  .step-text code.o { color: var(--accent2); background: rgba(249,115,22,0.08); }
+  .step-text code.b { color: var(--accent3); background: rgba(56,189,248,0.08); }
+  .step-text code.p { color: var(--accent4); background: rgba(232,121,249,0.08); }
+
+  .gap-box { padding: 0.65rem 1rem; background: rgba(74,222,128,0.06); border: 1px solid rgba(74,222,128,0.18); border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--accent); line-height: 2; text-align: center; }
+  .gap-box .dim { color: var(--muted); font-size: 0.67rem; }
+
+  .why-dummy { padding: 0.6rem 1rem; background: rgba(232,121,249,0.06); border: 1px solid rgba(232,121,249,0.18); border-radius: 8px; font-size: 0.78rem; color: rgba(232,234,240,0.75); line-height: 1.65; }
+  .why-dummy strong { color: var(--accent4); }
+
+  .complexity-row { margin-top: 0.8rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  .complexity-box { padding: 0.6rem 0.8rem; border-radius: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); }
+  .complexity-box .c-label { font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.2rem; }
+  .complexity-box .c-val { font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 700; color: var(--accent2); }
+
+  .nav { margin-top: 1.4rem; display: flex; align-items: center; gap: 1rem; }
+  .btn { padding: 0.55rem 1.4rem; border-radius: 8px; border: 1px solid var(--border); background: rgba(74,222,128,0.06); color: var(--accent); font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: background 0.2s, border-color 0.2s; }
+  .btn:hover { background: rgba(74,222,128,0.13); border-color: rgba(74,222,128,0.4); }
+  .btn-flip { padding: 0.55rem 1.4rem; border-radius: 8px; background: var(--accent); color: #090d0a; font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; border: none; cursor: pointer; transition: opacity 0.2s; }
+  .btn-flip:hover { opacity: 0.85; }
+  .counter { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); margin-left: auto; }
+</style>
+</head>
+<body>
+
+<div class="label">Linked List · Two Pointers</div>
+
+<div class="scene" onclick="flipCard()">
+  <div class="card" id="card">
+
+    <!-- FRONT -->
+    <div class="face face--front">
+      <div class="tag-row">
+        <span class="tag tag--ll">Linked List</span>
+        <span class="tag tag--two">Two Pointers</span>
+        <span class="tag tag--medium">Medium</span>
+      </div>
+
+      <div class="front-title">Remove Nth Node From End</div>
+      <div class="divider"></div>
+
+      <div class="question-block">
+        <p>Given the <span class="highlight">head</span> of a linked list, remove the <strong>nth node from the end</strong> and return the head. Solve it in <strong>one pass</strong>.</p>
+
+        <div class="diagram">
+          <div class="nodes-row">
+            <div class="node-box dummy">D</div><span class="arrow">→</span>
+            <div class="node-box norm">1</div><span class="arrow">→</span>
+            <div class="node-box norm">2</div><span class="arrow">→</span>
+            <div class="node-box del">3</div><span class="arrow">→</span>
+            <div class="node-box norm">4</div><span class="arrow">→</span>
+            <div class="node-box norm">5</div>
+          </div>
+          <span class="dim">n=3 → remove node "3" (3rd from end) → result: 1→2→4→5</span>
+          <span class="dim">D = dummy sentinel · both pointers start here</span>
+        </div>
+
+        <div class="insight">Advance first by n+1 — gap keeps second one node before the target</div>
+      </div>
+
+      <div class="flip-hint">Click to reveal solution</div>
+    </div>
+
+    <!-- BACK -->
+    <div class="face face--back">
+      <div class="back-title">Solution · Dummy Node + n+1 Gap</div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text"><strong>Dummy node:</strong> prepend <code class="p">temp = new ListNode(0)</code> before <code class="b">head</code>. Both <code class="o">first</code> and <code>second</code> start at <code class="p">temp</code>.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text"><strong>Advance <code class="o">first</code> by <code class="o">n+1</code> steps</strong> (loop <code>i=0; i&lt;=n</code>). The +1 ensures <code>second</code> lands on the predecessor of the node to delete — not the node itself.</div>
+        </div>
+
+        <div class="gap-box">
+          <span class="dim">gap after n+1 advance (n=2):</span><br>
+          <span style="color:var(--accent4)">D</span> → 1 → 2 → 3 → 4 → 5<br>
+          <span style="color:var(--accent4)">↑second</span>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          <span style="color:var(--accent2)">↑first</span>
+        </div>
+
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-text"><strong>Move both together</strong> until <code class="o">first == null</code>. Fixed gap is preserved — <code>second</code> stops just before the target node.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-text"><strong>Skip the target:</strong> <code>second.next = second.next.next</code>. Return <code class="p">temp.next</code> — not <code class="b">head</code> — to safely handle removing the head node.</div>
+        </div>
+
+        <div class="why-dummy">
+          <strong>Why dummy + n+1?</strong> Without a dummy, removing the head has no predecessor to update. The dummy handles it uniformly. Using <code>n+1</code> (not n) ensures <code>second</code> is the predecessor, making the skip operation clean.
+        </div>
+      </div>
+
+      <div class="complexity-row">
+        <div class="complexity-box">
+          <div class="c-label">Time</div>
+          <div class="c-val">O(n)</div>
+        </div>
+        <div class="complexity-box">
+          <div class="c-label">Space</div>
+          <div class="c-val">O(1)</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="nav">
+  <button class="btn" onclick="reset()">↺ Reset</button>
+  <button class="btn-flip" onclick="flipCard()">Flip Card</button>
+  <span class="counter" id="counter">Front</span>
+</div>
+
+<script>
+  let flipped = false;
+  function flipCard() {
+    flipped = !flipped;
+    document.getElementById('card').classList.toggle('flipped', flipped);
+    document.getElementById('counter').textContent = flipped ? 'Answer' : 'Front';
+  }
+  function reset() {
+    flipped = false;
+    document.getElementById('card').classList.remove('flipped');
+    document.getElementById('counter').textContent = 'Front';
+  }
+</script>
+</body>
+</html>
