@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Search in Rotated Sorted Array – Flashcard</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a080e;
+    --card-front: #120e1c;
+    --card-back: #0e1210;
+    --accent: #a78bfa;
+    --accent2: #fb923c;
+    --accent3: #34d399;
+    --accent4: #f472b6;
+    --text: #e8eaf0;
+    --muted: #5a5070;
+    --border: rgba(167,139,250,0.16);
+    --glow: rgba(167,139,250,0.07);
+  }
+
+  body {
+    background: var(--bg);
+    font-family: 'Syne', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 2rem; overflow-x: hidden;
+  }
+
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 55% 40% at 10% 20%, rgba(167,139,250,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse 45% 50% at 90% 80%, rgba(52,211,153,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 1.2rem; opacity: 0.75; }
+
+  .scene { width: min(680px, 100%); height: 480px; perspective: 1200px; cursor: pointer; }
+  .card { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1); }
+  .card.flipped { transform: rotateY(180deg); }
+
+  .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 20px; padding: 2.2rem 2.4rem; border: 1px solid var(--border); display: flex; flex-direction: column; }
+  .face--front { background: var(--card-front); box-shadow: 0 0 60px var(--glow), inset 0 1px 0 rgba(255,255,255,0.04); }
+  .face--back  { background: var(--card-back);  box-shadow: 0 0 60px rgba(167,139,250,0.06), inset 0 1px 0 rgba(255,255,255,0.04); transform: rotateY(180deg); }
+
+  .tag-row { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .tag { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.25rem 0.6rem; border-radius: 4px; }
+  .tag--bs     { background: rgba(167,139,250,0.12); color: var(--accent);  border: 1px solid rgba(167,139,250,0.28); }
+  .tag--arr    { background: rgba(52,211,153,0.1);   color: var(--accent3); border: 1px solid rgba(52,211,153,0.28); }
+  .tag--medium { background: rgba(251,146,60,0.11);  color: var(--accent2); border: 1px solid rgba(251,146,60,0.28); }
+
+  .front-title { font-size: 1.35rem; font-weight: 800; line-height: 1.2; margin-bottom: 1.2rem; color: #fff; }
+  .divider { height: 1px; background: linear-gradient(to right, var(--accent), transparent); margin-bottom: 1.2rem; opacity: 0.3; }
+
+  .question-block { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 0.85rem; }
+  .question-block p { font-size: 0.95rem; line-height: 1.65; color: rgba(232,234,240,0.82); }
+  .highlight { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.88em; background: rgba(167,139,250,0.09); padding: 0.1em 0.3em; border-radius: 3px; }
+
+  /* Array visual */
+  .arr-visual {
+    margin-top: 0.6rem; padding: 0.9rem 1.1rem;
+    background: rgba(255,255,255,0.025);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.73rem;
+  }
+  .cell-row { display: flex; gap: 0.28rem; margin-bottom: 0.4rem; flex-wrap: wrap; align-items: flex-end; }
+  .acell { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem; border: 1px solid; flex-direction: column; gap: 1px; }
+  .acell.left-half  { background: rgba(167,139,250,0.14); border-color: rgba(167,139,250,0.4); color: var(--accent); }
+  .acell.right-half { background: rgba(52,211,153,0.12);  border-color: rgba(52,211,153,0.4);  color: var(--accent3); }
+  .acell.midcell    { background: rgba(251,146,60,0.18);  border-color: rgba(251,146,60,0.5);  color: var(--accent2); }
+  .acell.target     { background: rgba(244,114,182,0.18); border-color: rgba(244,114,182,0.5); color: var(--accent4); }
+  .acell .idx       { font-size: 0.45rem; color: var(--muted); font-weight: 400; }
+  .arr-note { font-size: 0.66rem; color: var(--muted); line-height: 1.7; margin-top: 0.2rem; }
+  .arr-note span { color: var(--accent2); }
+
+  .insight { display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(251,146,60,0.1); border: 1px solid rgba(251,146,60,0.25); border-radius: 6px; padding: 0.45rem 0.8rem; font-size: 0.76rem; color: var(--accent2); margin-top: 0.3rem; }
+  .insight::before { content: '⚡'; font-size: 0.8em; }
+
+  .flip-hint { margin-top: 1.5rem; font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 0.5rem; }
+  .flip-hint::before { content: ''; width: 16px; height: 1px; background: var(--muted); }
+
+  /* BACK */
+  .back-title { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; opacity: 0.7; }
+
+  .steps { flex: 1; display: flex; flex-direction: column; gap: 0.55rem; overflow-y: auto; }
+  .step { display: flex; gap: 0.8rem; align-items: flex-start; }
+  .step-num { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.3); color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+  .step-text { font-size: 0.8rem; line-height: 1.6; color: rgba(232,234,240,0.85); }
+  .step-text code { font-family: 'JetBrains Mono', monospace; font-size: 0.76em; color: var(--accent); background: rgba(167,139,250,0.09); padding: 0.05em 0.3em; border-radius: 3px; }
+  .step-text code.o { color: var(--accent2); background: rgba(251,146,60,0.08); }
+  .step-text code.g { color: var(--accent3); background: rgba(52,211,153,0.08); }
+  .step-text code.p { color: var(--accent4); background: rgba(244,114,182,0.08); }
+
+  /* Decision tree */
+  .decision {
+    padding: 0.65rem 0.9rem;
+    background: rgba(167,139,250,0.05); border: 1px solid rgba(167,139,250,0.16);
+    border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+  }
+  .d-branch { margin-bottom: 0.5rem; }
+  .d-branch:last-child { margin-bottom: 0; }
+  .d-header { color: var(--accent); font-weight: 700; font-size: 0.7rem; margin-bottom: 0.25rem; }
+  .d-row { display: flex; gap: 0.5rem; align-items: flex-start; padding: 0.2rem 0.4rem; border-radius: 5px; margin-bottom: 0.15rem; font-size: 0.69rem; }
+  .d-row.yes  { background: rgba(52,211,153,0.07); color: var(--accent3); }
+  .d-row.no   { background: rgba(251,146,60,0.07);  color: var(--accent2); }
+  .d-cond { flex: 1; }
+  .d-act  { color: rgba(232,234,240,0.5); font-size: 0.65rem; white-space: nowrap; }
+
+  .key-insight { margin-top: 0.4rem; padding: 0.6rem 1rem; background: rgba(52,211,153,0.06); border: 1px solid rgba(52,211,153,0.18); border-radius: 8px; font-size: 0.77rem; color: rgba(232,234,240,0.75); line-height: 1.65; }
+  .key-insight strong { color: var(--accent3); }
+
+  .complexity-row { margin-top: 0.75rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  .complexity-box { padding: 0.6rem 0.8rem; border-radius: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); }
+  .complexity-box .c-label { font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.2rem; }
+  .complexity-box .c-val { font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 700; color: var(--accent2); }
+
+  .nav { margin-top: 1.4rem; display: flex; align-items: center; gap: 1rem; }
+  .btn { padding: 0.55rem 1.4rem; border-radius: 8px; border: 1px solid var(--border); background: rgba(167,139,250,0.06); color: var(--accent); font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: background 0.2s, border-color 0.2s; }
+  .btn:hover { background: rgba(167,139,250,0.13); border-color: rgba(167,139,250,0.4); }
+  .btn-flip { padding: 0.55rem 1.4rem; border-radius: 8px; background: var(--accent); color: #0a080e; font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; border: none; cursor: pointer; transition: opacity 0.2s; }
+  .btn-flip:hover { opacity: 0.85; }
+  .counter { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); margin-left: auto; }
+</style>
+</head>
+<body>
+
+<div class="label">Binary Search · Array</div>
+
+<div class="scene" onclick="flipCard()">
+  <div class="card" id="card">
+
+    <!-- FRONT -->
+    <div class="face face--front">
+      <div class="tag-row">
+        <span class="tag tag--bs">Binary Search</span>
+        <span class="tag tag--arr">Array</span>
+        <span class="tag tag--medium">Medium</span>
+      </div>
+
+      <div class="front-title">Search in Rotated Sorted Array</div>
+      <div class="divider"></div>
+
+      <div class="question-block">
+        <p>Given a rotated sorted array and a <span class="highlight">target</span>, return its index or <span class="highlight">-1</span>. Must run in <span class="highlight">O(log n)</span>.</p>
+
+        <div class="arr-visual">
+          <div class="cell-row">
+            <div class="acell left-half"><span>4</span><span class="idx">0</span></div>
+            <div class="acell left-half"><span>5</span><span class="idx">1</span></div>
+            <div class="acell left-half"><span>6</span><span class="idx">2</span></div>
+            <div class="acell midcell"><span>7</span><span class="idx">mid</span></div>
+            <div class="acell right-half"><span>0</span><span class="idx">4</span></div>
+            <div class="acell right-half"><span>1</span><span class="idx">5</span></div>
+            <div class="acell target"><span>2</span><span class="idx">tgt</span></div>
+          </div>
+          <div class="arr-note">
+            mid=7 ≥ left=4 → <span>left half is sorted [4..7]</span><br>
+            target=2 NOT in [4..7] → search right → find 2 ✓
+          </div>
+        </div>
+
+        <div class="insight">One half is always sorted — use it to decide which side to search</div>
+      </div>
+
+      <div class="flip-hint">Click to reveal solution</div>
+    </div>
+
+    <!-- BACK -->
+    <div class="face face--back">
+      <div class="back-title">Solution · Identify Sorted Half → Narrow Search</div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">If <code>nums[mid] == target</code> → return <code>mid</code>. Otherwise determine which half is sorted using <code>nums[mid] >= nums[left]</code>.</div>
+        </div>
+      </div>
+
+      <div class="decision">
+        <div class="d-branch">
+          <div class="d-header">🟣 Left half sorted &nbsp;(nums[mid] ≥ nums[left])</div>
+          <div class="d-row yes"><span class="d-cond">target ∈ [nums[left], nums[mid])</span><span class="d-act">right = mid−1</span></div>
+          <div class="d-row no" ><span class="d-cond">target outside that range</span><span class="d-act">left = mid+1</span></div>
+        </div>
+        <div class="d-branch">
+          <div class="d-header">🟢 Right half sorted &nbsp;(nums[mid] &lt; nums[left])</div>
+          <div class="d-row yes"><span class="d-cond">target ∈ (nums[mid], nums[right]]</span><span class="d-act">left = mid+1</span></div>
+          <div class="d-row no" ><span class="d-cond">target outside that range</span><span class="d-act">right = mid−1</span></div>
+        </div>
+      </div>
+
+      <div class="steps" style="margin-top:0.5rem">
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text"><strong>Loop ends</strong> with <code>left &gt; right</code> → target not found → return <code class="o">-1</code>.</div>
+        </div>
+      </div>
+
+      <div class="key-insight">
+        <strong>Core insight:</strong> in any rotated array, splitting at <code>mid</code> guarantees <strong>at least one half is sorted</strong>. Check if the target falls in the sorted half — if yes, search there; if no, search the other half.
+      </div>
+
+      <div class="complexity-row">
+        <div class="complexity-box">
+          <div class="c-label">Time</div>
+          <div class="c-val">O(log n)</div>
+        </div>
+        <div class="complexity-box">
+          <div class="c-label">Space</div>
+          <div class="c-val">O(1)</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="nav">
+  <button class="btn" onclick="reset()">↺ Reset</button>
+  <button class="btn-flip" onclick="flipCard()">Flip Card</button>
+  <span class="counter" id="counter">Front</span>
+</div>
+
+<script>
+  let flipped = false;
+  function flipCard() {
+    flipped = !flipped;
+    document.getElementById('card').classList.toggle('flipped', flipped);
+    document.getElementById('counter').textContent = flipped ? 'Answer' : 'Front';
+  }
+  function reset() {
+    flipped = false;
+    document.getElementById('card').classList.remove('flipped');
+    document.getElementById('counter').textContent = 'Front';
+  }
+</script>
+</body>
+</html>
