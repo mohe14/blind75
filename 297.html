@@ -3,137 +3,197 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Serialize & Deserialize Binary Tree – Flashcard</title>
-
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<title>Serialize & Deserialize Binary Tree</title>
 
 <style>
-  body {
-    background:#0d0f14;
-    font-family:'Syne',sans-serif;
-    color:#e8eaf0;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    height:100vh;
-  }
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
 
-  .scene {
-    width:680px;
-    height:460px;
-    perspective:1200px;
-    cursor:pointer;
-  }
+:root {
+  --bg:#0d0f14;
+  --card-front:#13161e;
+  --card-back:#0e1620;
+  --accent:#3dd6f5;
+  --accent2:#f5a623;
+  --green:#4ade80;
+  --red:#f87171;
+  --text:#e8eaf0;
+  --muted:#6b7280;
+  --border:#1e2535;
+}
 
-  .card {
-    width:100%;
-    height:100%;
-    position:relative;
-    transform-style:preserve-3d;
-    transition:transform 0.6s;
-  }
+body {
+  background:var(--bg);
+  font-family:'Syne',sans-serif;
+  color:var(--text);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  gap:20px;
+}
 
-  .card.flipped { transform:rotateY(180deg); }
+.scene {
+  width:680px;
+  height:460px;
+  perspective:1200px;
+}
 
-  .face {
-    position:absolute;
-    inset:0;
-    border-radius:20px;
-    padding:30px;
-    backface-visibility:hidden;
-    display:flex;
-    flex-direction:column;
-    gap:16px;
-  }
+.card {
+  width:100%;
+  height:100%;
+  position:relative;
+  transform-style:preserve-3d;
+  transition:transform .65s;
+}
 
-  .front { background:#13161e; }
-  .back  { background:#0e1620; transform:rotateY(180deg); }
+.card.flipped { transform:rotateY(180deg); }
 
-  .tag {
-    font-size:11px;
-    padding:4px 10px;
-    border-radius:10px;
-    font-weight:bold;
-  }
+.face {
+  position:absolute;
+  inset:0;
+  padding:32px;
+  border-radius:20px;
+  border:1px solid var(--border);
+  backface-visibility:hidden;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
 
-  .easy { color:#4ade80; border:1px solid #4ade80; }
-  .tree { color:#3dd6f5; border:1px solid #3dd6f5; }
+.front { background:var(--card-front); }
+.back { background:var(--card-back); transform:rotateY(180deg); }
 
-  .title {
-    font-size:22px;
-    font-weight:800;
-  }
+.tag {
+  font-size:11px;
+  padding:4px 10px;
+  border-radius:20px;
+  border:1px solid;
+  font-weight:700;
+}
 
-  .hint {
-    font-size:13px;
-    color:#9ca3af;
-  }
+.tag-green { color:var(--green); border-color:var(--green); }
+.tag-blue { color:var(--accent); border-color:var(--accent); }
 
-  .steps {
-    font-size:13px;
-    line-height:1.6;
-  }
+.title {
+  font-size:22px;
+  font-weight:800;
+}
 
-  .code {
-    font-family:'JetBrains Mono';
-    font-size:12px;
-    background:#000;
-    padding:12px;
-    border-radius:8px;
-    overflow:auto;
-  }
+.body {
+  font-size:14px;
+  color:#9ca3af;
+  line-height:1.6;
+}
 
-  .complexity {
-    display:flex;
-    gap:10px;
-  }
+.section {
+  font-size:11px;
+  text-transform:uppercase;
+  color:var(--muted);
+  font-weight:700;
+}
 
-  .badge {
-    font-size:12px;
-    padding:6px 10px;
-    border-radius:8px;
-    border:1px solid;
-  }
+.steps {
+  font-size:13px;
+  line-height:1.6;
+}
 
-  .time { border-color:#3dd6f5; color:#3dd6f5; }
-  .space { border-color:#f5a623; color:#f5a623; }
+.code {
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  background:#000;
+  padding:12px;
+  border-radius:8px;
+}
 
+.badges {
+  display:flex;
+  gap:10px;
+}
+
+.badge {
+  font-size:12px;
+  padding:4px 10px;
+  border-radius:8px;
+  font-family:'JetBrains Mono';
+  border:1px solid;
+}
+
+.time { color:var(--accent); border-color:var(--accent); }
+.space { color:var(--accent2); border-color:var(--accent2); }
+
+.controls {
+  display:flex;
+  gap:12px;
+}
+
+button {
+  font-family:'Syne';
+  font-size:13px;
+  font-weight:700;
+  padding:10px 20px;
+  border-radius:10px;
+  border:none;
+  cursor:pointer;
+}
+
+.btn-flip {
+  background:rgba(61,214,245,0.1);
+  color:var(--accent);
+  border:1px solid rgba(61,214,245,0.3);
+}
+
+.btn-again {
+  background:rgba(248,113,113,0.1);
+  color:var(--red);
+  border:1px solid rgba(248,113,113,0.3);
+}
+
+.btn-good {
+  background:rgba(74,222,128,0.1);
+  color:var(--green);
+  border:1px solid rgba(74,222,128,0.3);
+}
+
+.review { display:none; }
+.status {
+  font-size:12px;
+  color:var(--muted);
+}
 </style>
 </head>
 
 <body>
 
-<div class="scene" onclick="flipCard()">
+<h1 style="font-size:12px; letter-spacing:.2em; color:var(--muted)">FLASHCARD</h1>
+
+<div class="scene">
 <div class="card" id="card">
 
 <!-- FRONT -->
 <div class="face front">
-
-<div>
-<span class="tag easy">Medium</span>
-<span class="tag tree">Tree · DFS</span>
+<div style="display:flex; gap:8px;">
+<span class="tag tag-green">Medium</span>
+<span class="tag tag-blue">DFS · Tree</span>
 </div>
 
-<div class="title">
-Serialize & Deserialize Binary Tree
-</div>
+<div class="title">Serialize & Deserialize Binary Tree</div>
 
-<div class="hint">
-Convert a binary tree into a string and reconstruct it back.
+<div class="body">
+Convert a binary tree into a string and rebuild it back.
 
 <br><br>
 
-Think:
+Ask yourself:
 <ul>
-<li>How do you preserve tree structure?</li>
-<li>What traversal helps rebuild it?</li>
-<li>How do you represent null nodes?</li>
+<li>How to preserve structure?</li>
+<li>Why preorder works?</li>
+<li>How to represent null?</li>
 </ul>
 </div>
 
-<div style="margin-top:auto; text-align:center; font-size:12px; color:#6b7280;">
-Click to reveal solution
+<div style="margin-top:auto; text-align:center; font-size:12px; color:var(--muted)">
+Click Flip to reveal
 </div>
 
 </div>
@@ -141,52 +201,70 @@ Click to reveal solution
 <!-- BACK -->
 <div class="face back">
 
-<div style="font-weight:bold;">Solution · Preorder DFS + Queue</div>
+<div style="display:flex; gap:8px;">
+<span class="tag tag-green">Solution</span>
+<span class="tag tag-blue">Preorder DFS</span>
+</div>
 
+<div class="section">Algorithm</div>
 <div class="steps">
-1. Use <b>preorder traversal</b> (root → left → right)<br>
-2. Append values to string<br>
-3. Use special marker <b>"N"</b> for null nodes<br>
-4. For deserialize:<br>
-&nbsp;&nbsp;• Split string into queue<br>
-&nbsp;&nbsp;• Rebuild tree recursively in preorder<br>
+1. Traverse tree using preorder<br>
+2. Add value to string<br>
+3. Add "N" for null nodes<br>
+4. Deserialize using queue + recursion<br>
 </div>
 
+<div class="section">Code Idea</div>
 <div class="code">
-String serialize(TreeNode root) {
-    preorder(root);
-}
-
-TreeNode build(Queue q) {
-    val = q.poll();
-    if (val == "N") return null;
-
-    node = new TreeNode(val);
-    node.left = build(q);
-    node.right = build(q);
-}
+node = new TreeNode(val)
+node.left = build(queue)
+node.right = build(queue)
 </div>
 
-<div>
-<b>Key Insight:</b><br>
-Preorder guarantees correct reconstruction because
-we always process root before its children.
-Null markers preserve structure.
+<div class="section">Insight</div>
+<div class="steps">
+Preorder ensures correct rebuild order.<br>
+Null markers preserve structure exactly.
 </div>
 
-<div class="complexity">
-<span class="badge time">Time: O(n)</span>
-<span class="badge space">Space: O(n)</span>
+<div class="section">Complexity</div>
+<div class="badges">
+<span class="badge time">O(n)</span>
+<span class="badge space">O(n)</span>
 </div>
 
 </div>
 
 </div>
 </div>
+
+<!-- CONTROLS -->
+<div class="controls">
+<button class="btn-flip" onclick="flip()">Flip</button>
+
+<div class="review" id="review">
+<button class="btn-again" onclick="mark('again')">Again</button>
+<button class="btn-good" onclick="mark('good')">Got it</button>
+</div>
+</div>
+
+<div class="status" id="status">Click Flip to reveal the answer</div>
 
 <script>
-function flipCard(){
-  document.getElementById("card").classList.toggle("flipped");
+let flipped=false;
+
+function flip(){
+  flipped=!flipped;
+  document.getElementById("card").classList.toggle("flipped",flipped);
+  document.getElementById("review").style.display = flipped ? "flex":"none";
+  document.getElementById("status").innerText =
+    flipped ? "How well did you remember?" : "Click Flip to reveal the answer";
+}
+
+function mark(type){
+  flip();
+  document.getElementById("status").innerText =
+    type==="good" ? "Nice! Keep going." : "Marked for review.";
 }
 </script>
 
