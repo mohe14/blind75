@@ -3,269 +3,369 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Find Median from Data Stream – Flashcard</title>
+<title>Median Finder – Flashcard</title>
+
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
 
 <style>
-/* SAME STYLE AS YOUR TEMPLATE */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*{box-sizing:border-box;margin:0;padding:0}
 
-:root {
-  --bg: #0a080e;
-  --card-front: #120e1c;
-  --card-back: #0e1210;
-  --accent: #a78bfa;
-  --accent2: #fb923c;
-  --accent3: #34d399;
-  --accent4: #60a5fa;
-  --text: #e8eaf0;
-  --muted: #5a5070;
-  --border: rgba(167,139,250,0.16);
-  --glow: rgba(167,139,250,0.07);
+:root{
+  --bg:#080a0e;
+  --card-front:#11151c;
+  --card-back:#0e141b;
+  --accent:#4d9fff;
+  --accent2:#22d3ee;
+  --accent3:#34d399;
+  --accent4:#facc15;
+  --text:#e8eef9;
+  --muted:#6b7280;
+  --border:rgba(77,159,255,0.18);
+  --glow:rgba(77,159,255,0.08);
 }
 
-body {
-  background: var(--bg);
-  font-family: 'Syne', sans-serif;
-  color: var(--text);
-  min-height: 100vh;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 2rem;
+body{
+  background:var(--bg);
+  font-family:'Syne',sans-serif;
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:2rem;
 }
 
-.label {
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--accent4);
-  margin-bottom: 1.2rem;
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(ellipse 60% 40% at 10% 20%, rgba(77,159,255,0.05), transparent 60%),
+    radial-gradient(ellipse 40% 50% at 90% 80%, rgba(34,211,238,0.05), transparent 60%);
+  pointer-events:none;
 }
 
-.scene {
-  width: min(680px, 100%);
-  height: 480px;
-  perspective: 1200px;
-  cursor: pointer;
+.scene{
+  width:min(680px,100%);
+  height:480px;
+  perspective:1200px;
+  cursor:pointer;
 }
 
-.card {
-  width: 100%; height: 100%;
-  position: relative;
-  transform-style: preserve-3d;
-  transition: transform 0.7s;
+.card{
+  width:100%;
+  height:100%;
+  position:relative;
+  transform-style:preserve-3d;
+  transition:transform 0.7s cubic-bezier(0.4,0,0.2,1);
 }
 
-.card.flipped { transform: rotateY(180deg); }
+.card.flipped{transform:rotateY(180deg)}
 
-.face {
-  position: absolute;
-  inset: 0;
-  backface-visibility: hidden;
-  border-radius: 20px;
-  padding: 2rem;
-  border: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
+.face{
+  position:absolute;
+  inset:0;
+  border-radius:20px;
+  padding:2.2rem 2.4rem;
+  border:1px solid var(--border);
+  backface-visibility:hidden;
+  display:flex;
+  flex-direction:column;
 }
 
-.face--front { background: var(--card-front); }
-.face--back  { background: var(--card-back); transform: rotateY(180deg); }
+.front{background:var(--card-front)}
+.back{background:var(--card-back);transform:rotateY(180deg)}
 
-.tag-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+.tag-row{display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap}
 
-.tag {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.6rem;
-  padding: 0.25rem 0.6rem;
-  border-radius: 4px;
+.tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.65rem;
+  font-weight:700;
+  padding:0.25rem 0.6rem;
+  border-radius:6px;
 }
 
-.tag--heap   { background: rgba(167,139,250,0.12); color: var(--accent); }
-.tag--design { background: rgba(52,211,153,0.1); color: var(--accent3); }
-.tag--hard   { background: rgba(251,146,60,0.11); color: var(--accent2); }
+.tag.ds{background:rgba(77,159,255,0.12);color:var(--accent)}
+.tag.heap{background:rgba(34,211,238,0.12);color:var(--accent2)}
+.tag.medium{background:rgba(250,204,21,0.12);color:var(--accent4)}
 
-.front-title {
-  font-size: 1.3rem;
-  font-weight: 800;
-  margin-bottom: 1rem;
+.title{
+  font-size:1.5rem;
+  font-weight:800;
+  margin-bottom:1rem;
 }
 
-.divider {
-  height: 1px;
-  background: linear-gradient(to right, var(--accent4), transparent);
-  margin-bottom: 1rem;
+.divider{
+  height:1px;
+  background:linear-gradient(to right,var(--accent),transparent);
+  margin-bottom:1rem;
 }
 
-.question-block p {
-  font-size: 0.95rem;
-  line-height: 1.6;
+.question{
+  font-size:0.95rem;
+  line-height:1.7;
+  color:#cbd5e1;
 }
 
-.highlight {
-  color: var(--accent4);
-  font-family: 'JetBrains Mono';
+.highlight{
+  color:var(--accent);
+  font-family:'JetBrains Mono',monospace;
+  background:rgba(77,159,255,0.1);
+  padding:2px 6px;
+  border-radius:4px;
 }
 
-/* HEAP VISUAL */
-.heap-box {
-  margin-top: 1rem;
-  padding: 1rem;
-  border-left: 2px solid var(--accent4);
-  font-family: 'JetBrains Mono';
-  font-size: 0.75rem;
+.heap-visual{
+  margin-top:1rem;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.75rem;
+  padding:1rem;
+  background:rgba(255,255,255,0.03);
+  border-left:3px solid var(--accent);
+  border-radius:8px;
 }
 
-.heap-row {
-  display: flex;
-  gap: 0.4rem;
-  margin-bottom: 0.4rem;
+.heap-row{display:flex;gap:8px;margin-bottom:6px}
+
+.heap-box{
+  padding:6px 10px;
+  border-radius:6px;
+  border:1px solid;
 }
 
-.heap {
-  padding: 0.4rem 0.6rem;
-  border-radius: 6px;
-  border: 1px solid;
+.left{background:rgba(77,159,255,0.15);border-color:var(--accent)}
+.right{background:rgba(34,211,238,0.15);border-color:var(--accent2)}
+
+.insight{
+  margin-top:1rem;
+  font-size:0.8rem;
+  padding:0.5rem 0.8rem;
+  background:rgba(34,211,238,0.08);
+  border:1px solid rgba(34,211,238,0.25);
+  border-radius:6px;
 }
 
-.left  { background: rgba(167,139,250,0.15); color: var(--accent); }
-.right { background: rgba(52,211,153,0.15); color: var(--accent3); }
-
-.insight {
-  margin-top: 0.8rem;
-  font-size: 0.8rem;
-  color: var(--accent3);
+.flip-hint{
+  margin-top:auto;
+  font-size:0.7rem;
+  color:var(--muted);
+  letter-spacing:0.1em;
 }
 
-/* BACK */
-.step { margin-bottom: 0.6rem; font-size: 0.85rem; }
-.step code { color: var(--accent4); }
-
-.complexity-row {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
+.back-title{
+  font-size:0.7rem;
+  text-transform:uppercase;
+  letter-spacing:0.2em;
+  color:var(--accent);
+  margin-bottom:1rem;
 }
 
-.box {
-  padding: 0.6rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+.steps{display:flex;flex-direction:column;gap:0.6rem}
+
+.step{display:flex;gap:10px}
+
+.num{
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  background:rgba(77,159,255,0.15);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:0.7rem;
+  font-family:'JetBrains Mono',monospace;
 }
 
-.nav { margin-top: 1rem; display: flex; gap: 1rem; }
+.text{
+  font-size:0.85rem;
+  line-height:1.6;
+}
 
-button {
-  padding: 0.5rem 1rem;
-  cursor: pointer;
+code{
+  font-family:'JetBrains Mono',monospace;
+  color:var(--accent);
+}
+
+.trace{
+  margin-top:1rem;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.7rem;
+  padding:0.8rem;
+  border:1px solid var(--border);
+  border-radius:8px;
+}
+
+.trace table{width:100%;border-collapse:collapse}
+.trace td{padding:4px;border-bottom:1px solid rgba(255,255,255,0.05)}
+
+.insight-box{
+  margin-top:1rem;
+  padding:0.6rem;
+  border-radius:8px;
+  background:rgba(52,211,153,0.08);
+  border:1px solid rgba(52,211,153,0.2);
+  font-size:0.8rem;
+}
+
+.complexity{
+  margin-top:1rem;
+  display:flex;
+  gap:10px;
+}
+
+.box{
+  flex:1;
+  padding:0.6rem;
+  border-radius:8px;
+  border:1px solid var(--border);
+  font-family:'JetBrains Mono',monospace;
+}
+
+.nav{
+  margin-top:1rem;
+  display:flex;
+  gap:1rem;
+  width:min(680px,100%);
+}
+
+button{
+  font-family:'Syne',sans-serif;
+  padding:0.6rem 1.2rem;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:700;
+}
+
+.reset{
+  background:transparent;
+  border:1px solid var(--accent);
+  color:var(--accent);
+}
+
+.flip{
+  background:var(--accent);
+  color:#000;
+  border:none;
+}
+
+.counter{
+  margin-left:auto;
+  font-family:'JetBrains Mono',monospace;
+  color:var(--muted);
 }
 </style>
 </head>
 
 <body>
 
-<div class="label">Heap · Design</div>
-
 <div class="scene" onclick="flipCard()">
-<div class="card" id="card">
+  <div class="card" id="card">
 
-<!-- FRONT -->
-<div class="face face--front">
+    <!-- FRONT -->
+    <div class="face front">
 
-<div class="tag-row">
-<span class="tag tag--heap">Heap</span>
-<span class="tag tag--design">Data Stream</span>
-<span class="tag tag--hard">Hard</span>
-</div>
+      <div class="tag-row">
+        <div class="tag ds">Heap</div>
+        <div class="tag heap">Two Heaps</div>
+        <div class="tag medium">Medium</div>
+      </div>
 
-<div class="front-title">Find Median from Data Stream</div>
-<div class="divider"></div>
+      <div class="title">Find Median from Data Stream</div>
+      <div class="divider"></div>
 
-<div class="question-block">
-<p>
-Continuously add numbers and return the <span class="highlight">median</span> in
-<span class="highlight">O(log n)</span>.
-</p>
+      <div class="question">
+        Design a structure that supports:
+        <br><br>
+        • <span class="highlight">addNum(num)</span><br>
+        • <span class="highlight">findMedian()</span>
+        <br><br>
+        Maintain the median efficiently as numbers arrive.
+      </div>
 
-<div class="heap-box">
+      <div class="heap-visual">
+        <div class="heap-row">
+          <div class="heap-box left">MaxHeap (left)</div>
+          <div class="heap-box right">MinHeap (right)</div>
+        </div>
+        <div class="heap-row">
+          <div class="heap-box left">5 3 2</div>
+          <div class="heap-box right">7 8 10</div>
+        </div>
+        <div>Left holds smaller half, Right holds larger half</div>
+      </div>
 
-<div class="heap-row">
-<div class="heap left">MaxHeap (left): [5,4,3]</div>
-</div>
+      <div class="insight">⚡ Keep heaps balanced so median is always at top</div>
 
-<div class="heap-row">
-<div class="heap right">MinHeap (right): [6,7,8]</div>
-</div>
+      <div class="flip-hint">Click to reveal solution</div>
 
-<p>
-Balanced heaps → median is either top of left OR average of both tops
-</p>
+    </div>
 
-</div>
+    <!-- BACK -->
+    <div class="face back">
 
-<div class="insight">
-Always keep left maxHeap ≥ right minHeap size
-</div>
+      <div class="back-title">Solution · Two Heaps</div>
 
-</div>
+      <div class="steps">
+        <div class="step">
+          <div class="num">1</div>
+          <div class="text">Use <code>maxHeap</code> for left and <code>minHeap</code> for right</div>
+        </div>
+        <div class="step">
+          <div class="num">2</div>
+          <div class="text">Always push into <code>left</code>, then move top to <code>right</code></div>
+        </div>
+        <div class="step">
+          <div class="num">3</div>
+          <div class="text">Rebalance so <code>left.size ≥ right.size</code></div>
+        </div>
+        <div class="step">
+          <div class="num">4</div>
+          <div class="text">Median is either <code>left.peek()</code> or average of both</div>
+        </div>
+      </div>
 
-</div>
+      <div class="trace">
+        <table>
+          <tr><td>Insert</td><td>Left</td><td>Right</td><td>Median</td></tr>
+          <tr><td>5</td><td>[5]</td><td>[]</td><td>5</td></tr>
+          <tr><td>3</td><td>[3]</td><td>[5]</td><td>4</td></tr>
+          <tr><td>8</td><td>[5,3]</td><td>[8]</td><td>5</td></tr>
+        </table>
+      </div>
 
-<!-- BACK -->
-<div class="face face--back">
+      <div class="insight-box">
+        Key trick: always push to left first, then rebalance. This guarantees ordering and size correctness.
+      </div>
 
-<div class="step">
-1️⃣ Insert into <code>left (maxHeap)</code>
-</div>
+      <div class="complexity">
+        <div class="box">Time: O(log n)</div>
+        <div class="box">Space: O(n)</div>
+      </div>
 
-<div class="step">
-2️⃣ Move largest from left → <code>right (minHeap)</code>
-</div>
+    </div>
 
-<div class="step">
-3️⃣ Rebalance if <code>right.size > left.size</code>
-</div>
-
-<div class="step">
-4️⃣ Median:
-<br>
-• If uneven → <code>left.peek()</code><br>
-• If equal → average of both
-</div>
-
-<div class="step">
-💡 Why?
-<br>
-Left holds smaller half, right holds larger half
-</div>
-
-<div class="complexity-row">
-<div class="box">Time: O(log n)</div>
-<div class="box">Space: O(n)</div>
-</div>
-
-</div>
-
-</div>
+  </div>
 </div>
 
 <div class="nav">
-<button onclick="flipCard()">Flip</button>
-<button onclick="reset()">Reset</button>
+  <button class="reset" onclick="reset()">↺ Reset</button>
+  <button class="flip" onclick="flipCard()">Flip Card</button>
+  <div class="counter" id="counter">Front</div>
 </div>
 
 <script>
-let flipped = false;
-
-function flipCard() {
-  flipped = !flipped;
-  document.getElementById('card').classList.toggle('flipped', flipped);
+let flipped=false;
+function flipCard(){
+  flipped=!flipped;
+  document.getElementById('card').classList.toggle('flipped',flipped);
+  document.getElementById('counter').textContent=flipped?'Answer':'Front';
 }
-
-function reset() {
-  flipped = false;
+function reset(){
+  flipped=false;
   document.getElementById('card').classList.remove('flipped');
+  document.getElementById('counter').textContent='Front';
 }
 </script>
 
