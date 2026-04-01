@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find Median from Data Stream – Flashcard</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+
+<style>
+/* SAME STYLE AS YOUR TEMPLATE */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a080e;
+  --card-front: #120e1c;
+  --card-back: #0e1210;
+  --accent: #a78bfa;
+  --accent2: #fb923c;
+  --accent3: #34d399;
+  --accent4: #60a5fa;
+  --text: #e8eaf0;
+  --muted: #5a5070;
+  --border: rgba(167,139,250,0.16);
+  --glow: rgba(167,139,250,0.07);
+}
+
+body {
+  background: var(--bg);
+  font-family: 'Syne', sans-serif;
+  color: var(--text);
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 2rem;
+}
+
+.label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent4);
+  margin-bottom: 1.2rem;
+}
+
+.scene {
+  width: min(680px, 100%);
+  height: 480px;
+  perspective: 1200px;
+  cursor: pointer;
+}
+
+.card {
+  width: 100%; height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.7s;
+}
+
+.card.flipped { transform: rotateY(180deg); }
+
+.face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: 20px;
+  padding: 2rem;
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+
+.face--front { background: var(--card-front); }
+.face--back  { background: var(--card-back); transform: rotateY(180deg); }
+
+.tag-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+
+.tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+}
+
+.tag--heap   { background: rgba(167,139,250,0.12); color: var(--accent); }
+.tag--design { background: rgba(52,211,153,0.1); color: var(--accent3); }
+.tag--hard   { background: rgba(251,146,60,0.11); color: var(--accent2); }
+
+.front-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.divider {
+  height: 1px;
+  background: linear-gradient(to right, var(--accent4), transparent);
+  margin-bottom: 1rem;
+}
+
+.question-block p {
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.highlight {
+  color: var(--accent4);
+  font-family: 'JetBrains Mono';
+}
+
+/* HEAP VISUAL */
+.heap-box {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-left: 2px solid var(--accent4);
+  font-family: 'JetBrains Mono';
+  font-size: 0.75rem;
+}
+
+.heap-row {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.heap {
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid;
+}
+
+.left  { background: rgba(167,139,250,0.15); color: var(--accent); }
+.right { background: rgba(52,211,153,0.15); color: var(--accent3); }
+
+.insight {
+  margin-top: 0.8rem;
+  font-size: 0.8rem;
+  color: var(--accent3);
+}
+
+/* BACK */
+.step { margin-bottom: 0.6rem; font-size: 0.85rem; }
+.step code { color: var(--accent4); }
+
+.complexity-row {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.box {
+  padding: 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.nav { margin-top: 1rem; display: flex; gap: 1rem; }
+
+button {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="label">Heap · Design</div>
+
+<div class="scene" onclick="flipCard()">
+<div class="card" id="card">
+
+<!-- FRONT -->
+<div class="face face--front">
+
+<div class="tag-row">
+<span class="tag tag--heap">Heap</span>
+<span class="tag tag--design">Data Stream</span>
+<span class="tag tag--hard">Hard</span>
+</div>
+
+<div class="front-title">Find Median from Data Stream</div>
+<div class="divider"></div>
+
+<div class="question-block">
+<p>
+Continuously add numbers and return the <span class="highlight">median</span> in
+<span class="highlight">O(log n)</span>.
+</p>
+
+<div class="heap-box">
+
+<div class="heap-row">
+<div class="heap left">MaxHeap (left): [5,4,3]</div>
+</div>
+
+<div class="heap-row">
+<div class="heap right">MinHeap (right): [6,7,8]</div>
+</div>
+
+<p>
+Balanced heaps → median is either top of left OR average of both tops
+</p>
+
+</div>
+
+<div class="insight">
+Always keep left maxHeap ≥ right minHeap size
+</div>
+
+</div>
+
+</div>
+
+<!-- BACK -->
+<div class="face face--back">
+
+<div class="step">
+1️⃣ Insert into <code>left (maxHeap)</code>
+</div>
+
+<div class="step">
+2️⃣ Move largest from left → <code>right (minHeap)</code>
+</div>
+
+<div class="step">
+3️⃣ Rebalance if <code>right.size > left.size</code>
+</div>
+
+<div class="step">
+4️⃣ Median:
+<br>
+• If uneven → <code>left.peek()</code><br>
+• If equal → average of both
+</div>
+
+<div class="step">
+💡 Why?
+<br>
+Left holds smaller half, right holds larger half
+</div>
+
+<div class="complexity-row">
+<div class="box">Time: O(log n)</div>
+<div class="box">Space: O(n)</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+<div class="nav">
+<button onclick="flipCard()">Flip</button>
+<button onclick="reset()">Reset</button>
+</div>
+
+<script>
+let flipped = false;
+
+function flipCard() {
+  flipped = !flipped;
+  document.getElementById('card').classList.toggle('flipped', flipped);
+}
+
+function reset() {
+  flipped = false;
+  document.getElementById('card').classList.remove('flipped');
+}
+</script>
+
+</body>
+</html>
