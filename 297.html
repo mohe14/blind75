@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Serialize & Deserialize Binary Tree – Flashcard</title>
+
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+
+<style>
+  body {
+    background:#0d0f14;
+    font-family:'Syne',sans-serif;
+    color:#e8eaf0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    height:100vh;
+  }
+
+  .scene {
+    width:680px;
+    height:460px;
+    perspective:1200px;
+    cursor:pointer;
+  }
+
+  .card {
+    width:100%;
+    height:100%;
+    position:relative;
+    transform-style:preserve-3d;
+    transition:transform 0.6s;
+  }
+
+  .card.flipped { transform:rotateY(180deg); }
+
+  .face {
+    position:absolute;
+    inset:0;
+    border-radius:20px;
+    padding:30px;
+    backface-visibility:hidden;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+
+  .front { background:#13161e; }
+  .back  { background:#0e1620; transform:rotateY(180deg); }
+
+  .tag {
+    font-size:11px;
+    padding:4px 10px;
+    border-radius:10px;
+    font-weight:bold;
+  }
+
+  .easy { color:#4ade80; border:1px solid #4ade80; }
+  .tree { color:#3dd6f5; border:1px solid #3dd6f5; }
+
+  .title {
+    font-size:22px;
+    font-weight:800;
+  }
+
+  .hint {
+    font-size:13px;
+    color:#9ca3af;
+  }
+
+  .steps {
+    font-size:13px;
+    line-height:1.6;
+  }
+
+  .code {
+    font-family:'JetBrains Mono';
+    font-size:12px;
+    background:#000;
+    padding:12px;
+    border-radius:8px;
+    overflow:auto;
+  }
+
+  .complexity {
+    display:flex;
+    gap:10px;
+  }
+
+  .badge {
+    font-size:12px;
+    padding:6px 10px;
+    border-radius:8px;
+    border:1px solid;
+  }
+
+  .time { border-color:#3dd6f5; color:#3dd6f5; }
+  .space { border-color:#f5a623; color:#f5a623; }
+
+</style>
+</head>
+
+<body>
+
+<div class="scene" onclick="flipCard()">
+<div class="card" id="card">
+
+<!-- FRONT -->
+<div class="face front">
+
+<div>
+<span class="tag easy">Medium</span>
+<span class="tag tree">Tree · DFS</span>
+</div>
+
+<div class="title">
+Serialize & Deserialize Binary Tree
+</div>
+
+<div class="hint">
+Convert a binary tree into a string and reconstruct it back.
+
+<br><br>
+
+Think:
+<ul>
+<li>How do you preserve tree structure?</li>
+<li>What traversal helps rebuild it?</li>
+<li>How do you represent null nodes?</li>
+</ul>
+</div>
+
+<div style="margin-top:auto; text-align:center; font-size:12px; color:#6b7280;">
+Click to reveal solution
+</div>
+
+</div>
+
+<!-- BACK -->
+<div class="face back">
+
+<div style="font-weight:bold;">Solution · Preorder DFS + Queue</div>
+
+<div class="steps">
+1. Use <b>preorder traversal</b> (root → left → right)<br>
+2. Append values to string<br>
+3. Use special marker <b>"N"</b> for null nodes<br>
+4. For deserialize:<br>
+&nbsp;&nbsp;• Split string into queue<br>
+&nbsp;&nbsp;• Rebuild tree recursively in preorder<br>
+</div>
+
+<div class="code">
+String serialize(TreeNode root) {
+    preorder(root);
+}
+
+TreeNode build(Queue q) {
+    val = q.poll();
+    if (val == "N") return null;
+
+    node = new TreeNode(val);
+    node.left = build(q);
+    node.right = build(q);
+}
+</div>
+
+<div>
+<b>Key Insight:</b><br>
+Preorder guarantees correct reconstruction because
+we always process root before its children.
+Null markers preserve structure.
+</div>
+
+<div class="complexity">
+<span class="badge time">Time: O(n)</span>
+<span class="badge space">Space: O(n)</span>
+</div>
+
+</div>
+
+</div>
+</div>
+
+<script>
+function flipCard(){
+  document.getElementById("card").classList.toggle("flipped");
+}
+</script>
+
+</body>
+</html>
